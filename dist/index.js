@@ -82634,7 +82634,10 @@ class Annotations {
             entity.addComponent('script');
             entity.script.create(Annotation);
             const script = entity.script;
-            script.annotation.label = (i + 1).toString();
+            // [本补丁] 圆点序号取 title 前缀数字（如 "60_点"→"60"，与 KML 序号一一对应）；
+            //          删除任意标注点（数组重排）后数字仍与 KML 保持一致。
+            const __num = /^\d+/.exec(ann.title || '');
+            script.annotation.label = __num ? __num[0] : (i + 1).toString();
             script.annotation.title = ann.title;
             script.annotation.text = ann.text;
             entity.setPosition(ann.position[0], ann.position[1], ann.position[2]);
