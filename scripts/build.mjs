@@ -52,7 +52,7 @@ const VIEWER_FILES = ['index.html', 'index.js', 'index.css'];
 
 // 功能模块清单：一个功能 = 一个 JS 文件
 const MODULES = ['camlog', 'wall-layer', 'annotations-poster', 'camera-constraint', 'pano-layer'];
-const MODULE_VERSION = '58'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
+const MODULE_VERSION = '59'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
 
 // ---------- index.html 补丁 ----------
 const HTML_PATCHES = [

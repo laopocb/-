@@ -60,12 +60,7 @@
     const styleSheet = document.createElement('style');
     styleSheet.textContent = `
         @keyframes poster-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(.92); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
-        #annotations-poster img.poster-img { width: 100%; max-height: 37vh; object-fit: contain; display: block; background: #000; }
-        /* 手机端（<768px）标注图片放大 100%（翻倍）：容器 92vw/74vh、图 74vh，覆盖内联尺寸 */
-        @media (max-width: 768px) {
-            #annotations-poster { max-width: min(516px, 92vw) !important; max-height: 74vh !important; }
-            #annotations-poster img.poster-img { width: 100% !important; max-height: 74vh !important; }
-        }
+        #annotations-poster img.poster-img { width: auto !important; height: auto !important; max-width: 100% !important; max-height: 74vh !important; object-fit: contain; display: block; background: #000; }
         /* 永久隐藏官方注解的小黑气泡（title+text 文字说明已移除，官方每帧会强制显示，故用 !important 压制） */
         #ui .pc-annotation { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
     `;
