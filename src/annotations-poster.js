@@ -28,6 +28,21 @@
     const CLOSE_DELAY_MS = 2000; // 连续超距 N ms 后自动关闭
     if (!ENABLED) return;
 
+    // 自适应关闭阈值：按该点位到最近邻标注的水平距离 ×0.6（clamp 2~8m）。
+    // 修复：原先写死 10m 大于相邻点位间距（约 5~9m），走到旁边点位时仍在范围内，浮窗永不自动关闭。
+    const rangeFor = (idx) => {
+        const a = annotations[idx];
+        if (!a || !a.position) return RANGE;
+        let best = 1e9;
+        annotations.forEach((b, j) => {
+            if (j === idx || !b.position) return;
+            const d = Math.hypot(b.position[0] - a.position[0], b.position[2] - a.position[2]);
+            if (d < best) best = d;
+        });
+        const v = best * 0.6;
+        return Number.isFinite(v) ? Math.min(8, Math.max(2, v)) : RANGE;
+    };
+
     // ---------- 读取 settings.json 的注解（含 image 字段） ----------
     let annotations = [];
     try {
@@ -104,8 +119,9 @@
         if (!cam || !current) { rafId = requestAnimationFrame(tickWatch); return; }
         const p = cam.getPosition();
         const a = current.ann.position;
-        const dist = Math.hypot(p.x - a[0], p.y - a[1], p.z - a[2]);
-        if (dist > RANGE) {
+        // 水平距离判断（忽略 y 高差，避免高台点位误判/漏判）
+        const dist = Math.hypot(p.x - a[0], p.z - a[2]);
+        if (dist > rangeFor(current.index)) {
             if (outSince === null) outSince = performance.now();
             if (performance.now() - outSince >= CLOSE_DELAY_MS) {
                 close();
