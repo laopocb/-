@@ -54,21 +54,30 @@
     };
 
     const init = (app, gl, center) => {
-        // 纹理：img/pano.jpg（等距柱状）→ 引擎未注册 jpg handler，改用 Image + Texture 直传
-        //       （与标注纹理已验证的 canvas 直传路径一致；jpg 无 alpha 通道，无透明黑块问题）
+        // 纹理：img/pano.jpg（等距柱状）
+        //   - 引擎未注册 jpg handler → Image 直读；
+        //   - 强制 2048x1024 二次幂画布重绘（1280x641 非二次幂在 WebGPU 下 mipmap 对齐错误 → 黑块/破面）；
+        //   - 水平镜像（scale -1,1）：等距图按球内观察方向采样会左右镜像，预翻转修正；
+        //   - 上传完毕以 levels 直传（与标注纹理已验证路径一致）。
         const img = new Image();
         img.onload = () => {
             try {
+                const W = 2048, H = 1024;
+                const cv = document.createElement('canvas');
+                cv.width = W; cv.height = H;
+                const g = cv.getContext('2d');
+                g.translate(W, 0); g.scale(-1, 1);
+                g.drawImage(img, 0, 0, W, H);
+                const id = g.getImageData(0, 0, W, H);
                 const dv = app.graphicsDevice;
                 const tex = new gl.Texture(dv, {
-                    width: img.naturalWidth,
-                    height: img.naturalHeight,
+                    width: W, height: H,
+                    format: gl.PIXELFORMAT_RGBA8,
                     mipmaps: true,
                     minFilter: gl.FILTER_LINEAR_MIPMAP_LINEAR,
-                    magFilter: gl.FILTER_LINEAR
+                    magFilter: gl.FILTER_LINEAR,
+                    levels: [new Uint8Array(id.data.buffer)]
                 });
-                tex.setSource(img);
-                tex.upload();
                 build(app, gl, center, tex);
             } catch (err) {
                 console.warn('[pano] 纹理创建失败：', err);
@@ -87,19 +96,27 @@
         mat.cull = gl.CULLFACE_NONE;
         mat.update();
 
-        // 球体网格
-        const geom = new gl.SphereGeometry({ radius: RADIUS, widthSegments: 64, heightSegments: 32 });
+        // 球体网格：正确参数 latitudeBands/longitudeBands，96x48 细分避免极点大三角破面
+        const geom = new gl.SphereGeometry({ radius: RADIUS, latitudeBands: 48, longitudeBands: 96 });
         const mesh = gl.Mesh.fromGeometry(app.graphicsDevice, geom);
         const mi = new gl.MeshInstance(mesh, mat);
 
         const ent = new gl.Entity('pano-layer');
         ent.addComponent('render', { meshInstances: [mi] });
         ent.setPosition(center.x, center.y, center.z);
+        // 方位校准：默认球面 u=0.5（全景图中心/正门）朝 +Z；
+        // 相机初始视线 fwd=(-0.354,-0.002,0.935) ≈ 自 +Z 顺时针 20.7°，绕 Y 转 -20.7° 对齐；
+        // ?panoRot=deg 可覆盖微调（内侧采样经镜像画布后无需再补 180）。
+        const rotY = (() => {
+            const r = parseFloat(params.get('panoRot'));
+            return Number.isFinite(r) ? r : -20.7;
+        })();
+        ent.setEulerAngles(0, rotY, 0);
         app.root.addChild(ent);
 
         state = { center, mat, ent, mi, radius: RADIUS, ready: true, done: true };
         app.renderNextFrame = true;
-        console.log('[pano] 全景球已就位 @', center.x.toFixed(2), center.y.toFixed(2), center.z.toFixed(2), 'R=' + RADIUS);
+        console.log('[pano] 全景球已就位 @', center.x.toFixed(2), center.y.toFixed(2), center.z.toFixed(2), 'R=' + RADIUS, 'rotY=' + rotY.toFixed(1) + '°');
     };
 
     setTimeout(tick, 500);
