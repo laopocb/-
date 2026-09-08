@@ -52,7 +52,7 @@ const VIEWER_FILES = ['index.html', 'index.js', 'index.css'];
 
 // 功能模块清单：一个功能 = 一个 JS 文件
 const MODULES = ['camlog', 'wall-layer', 'annotations-poster', 'camera-constraint', 'pano-layer'];
-const MODULE_VERSION = '67'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
+const MODULE_VERSION = '68'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
 
 // ---------- index.html 补丁 ----------
 const HTML_PATCHES = [
@@ -464,7 +464,7 @@ const JS_PATCHES = [
         ].join('\n')
     },
     {
-        name: 'index.js-标注图片标记（全量）：img/热点标记.png，2号用热点标记1.png，选中切激活图，常显常点',
+        name: 'index.js-标注默认平台官方圆点(数字1-114)，?custom=1 才启用自定义图标',
         target: [
             '        // Create texture',
             '        this.texture = Annotation._createHotspotTexture(this.app, this.label);'
@@ -472,6 +472,10 @@ const JS_PATCHES = [
         replacement: [
             '        // Create texture',
             '        this.texture = Annotation._createHotspotTexture(this.app, this.label);',
+            '        // [本补丁] 默认使用平台官方默认圆点（数字 = 标注序号 1~114，呼吸动画正常）；',
+            '        //          仅 URL 加 ?custom=1 时启用自定义图片图标（img/热点标记-激活.png）。',
+            '        const __ssUseCustom = new URLSearchParams(location.search).has(\'custom\');',
+            '        if (__ssUseCustom) {',
             '        // [本补丁] 所有标注统一使用 img/热点标记-激活.png（1.62x，无呼吸，用户指定试用此图）：',
             '        //          选中/取消切换保持同一张图（后续如需区分再改回 base/激活 双图）。',
             '        //          异步加载，失败回退官方圆点。像素大小按光效实际像素等比换算与官方标记一致。',
@@ -542,7 +546,8 @@ const JS_PATCHES = [
             '            this._markerBoost = 1.62;',
             '            const t = this._markerTex[this._markerActive ? \'active\' : \'base\'];',
             '            if (t) this._applyMarkerTex(t);',
-            '        };'
+            '        };',
+            '        }   // __ssUseCustom'
         ].join('\n')
     },
     {
