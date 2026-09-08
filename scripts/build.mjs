@@ -671,27 +671,8 @@ const main = async () => {
             if (!/<\/body>/i.test(output)) {
                 throw new Error('构建失败：官方 index.html 中未找到 </body>，无法注入模块脚本。');
             }
-            // 移动端方向控制（虚拟摇杆 D-pad）画皮：官方 joystick 换成 img/move.png 金色图标
-            const JOYSTICK_CSS = [
-                '<style id="__ssplatJoystickSkin">',
-                '  #joystickBase,',
-                '  #joystickBase.mode-2d {',
-                '    width: 120px;',
-                '    height: 120px;',
-                '    border-radius: 50%;',
-                '    border: none;',
-                '    touch-action: none;',
-                '    background: url(./img/move.png) center / 100% 100% no-repeat !important;',
-                '    background-color: transparent !important;',
-                '  }',
-                '  #joystickBase > #joystick {',
-                '    background-color: rgba(255, 255, 255, 0.30);',
-                '    box-shadow: none;',
-                '    opacity: 0.45;',
-                '  }',
-                '</style>',
-            ].join('\n');
-            output = output.replace(/<\/body>/i, MODULE_SCRIPTS + '\n' + JOYSTICK_CSS + '\n</body>');
+            // 移动端方向控制：使用官方平台自带默认摇杆（用户要求，不再自定义图标）
+            output = output.replace(/<\/body>/i, MODULE_SCRIPTS + '\n</body>');
             console.log(`  [注入] 功能模块脚本 × ${MODULES.length}（${MODULES.map((n) => `${n}.js`).join(' / ')}）`);
         } else if (file === 'index.js') {
             for (const patch of JS_PATCHES) {
