@@ -35,6 +35,7 @@
 
     // 等引擎暴露就绪
     let cam = null, app = null;
+    let lastTargetY = null; // 上一帧目标高度（防上楼梯逐级变矮）
     const waitReady = async () => {
         for (let i = 0; i < 300; i++) {
             if (window.__ssplatCameraEntity && window.__ssplatApp) {
@@ -58,14 +59,24 @@
         try {
             const p = cam.getPosition();
 
-            // 1) 高度写死：向下探测空气墙结构面，相机 y = 结构面 + 1.5（随结构升高）。
-            //    直接写死到位（K=1.0）：官方相机控制器每帧可能覆写高度，平滑 0.35 永远拉不回去，
-            //    实测二楼/平台处眼高只剩 0.8m（贴地）。
-            const down = col.queryRay(p.x, p.y, p.z, 0, -1, 0, DROP_RAY);
-            if (down && typeof down.y === 'number') {
-                const targetY = down.y + EYE_HEIGHT;
-                if (Math.abs(p.y - targetY) > 0.005) {
-                    cam.setPosition(p.x, targetY, p.z);
+            // 1) 高度写死：多点下探取“最高落脚面”（相机四周 ±0.35m 共 5 个测点），
+            //    避免楼梯/坡面单点命中低一层面导致越走越矮（iOS WebGPU 上尤其明显）。
+            const OFF = [0, 0.35, -0.35, 0, 0];
+            const OFZ = [0, 0, 0, 0.35, -0.35];
+            let best = -Infinity;
+            for (let k = 0; k < 5; k++) {
+                const h = col.queryRay(p.x + OFF[k], p.y, p.z + OFZ[k], 0, -1, 0, DROP_RAY);
+                if (h && typeof h.y === 'number' && h.y > best) best = h.y;
+            }
+            if (Number.isFinite(best)) {
+                let target = best + EYE_HEIGHT;
+                // 高度钳制：单帧最多下降 0.5m（下台阶平滑），防止行走控制器把相机逐帧压低
+                if (lastTargetY !== null && target < lastTargetY - 0.5) {
+                    target = lastTargetY - 0.5;
+                }
+                lastTargetY = target;
+                if (Math.abs(p.y - target) > 0.005) {
+                    cam.setPosition(p.x, target, p.z);
                 }
             }
 
