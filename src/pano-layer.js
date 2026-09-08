@@ -90,9 +90,9 @@
                     const rx = dx * cosR + dz * sinR;
                     const rz = -dx * sinR + dz * cosR;
                     dx = rx; dz = rz;
-                    // → 等距 uv
+                    // → 等距 uv（v 翻转：天空盒 cubemap 的屏幕向上与等距图顶镜像）
                     const u = (Math.atan2(dx, dz) / (2 * Math.PI) + 0.5) % 1;
-                    const v = 0.5 - Math.asin(Math.max(-1, Math.min(1, dy))) / Math.PI;
+                    const v = 0.5 + Math.asin(Math.max(-1, Math.min(1, dy))) / Math.PI;
                     const sx = Math.min(srcW - 1, Math.max(0, u * srcW));
                     const sy = Math.min(srcH - 1, Math.max(0, v * srcH));
                     // 双线性
