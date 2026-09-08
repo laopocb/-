@@ -60,11 +60,12 @@ const main = async () => {
         console.log(`  [data] 点位图片已整目录打包 × ${pts.length}（共 ${fmt(sz)}）`);
     }
 
-    // 3) img（封面/莲花/光环/全部标记图）
+    // 3) img（封面/莲花/光环/标注图：仅打包运行时实际引用的，排除无用素材）
     const imgExt = ['.jpg', '.jpeg', '.png', '.webp'];
-    const imgs = (await readdir(IMG)).filter((f) => !f.startsWith('_') && imgExt.includes(f.slice(f.lastIndexOf('.')).toLowerCase()));
+    const imgSkip = new Set(['热点标记.png', '热点标记1.png', 'd8a4.png', 'b1.png', 'b2.png', 'b3.png', 'IMG_980.jpg']);
+    const imgs = (await readdir(IMG)).filter((f) => !f.startsWith('_') && !imgSkip.has(f) && imgExt.includes(f.slice(f.lastIndexOf('.')).toLowerCase()));
     total += await copyTree(IMG, imgs, 'img');
-    console.log(`  [img] 已复制 ${imgs.length} 个`);
+    console.log(`  [img] 已复制 ${imgs.length} 个（排除无用素材）`);
 
     console.log(`=== 完成：包总大小 ${fmt(total)} ===`);
     console.log('  文件清单:');
