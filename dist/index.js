@@ -82276,10 +82276,6 @@ class Annotation extends Script {
         Annotation._initializeStatic(this.app);
         // Create texture
         this.texture = Annotation._createHotspotTexture(this.app, this.label);
-        // [本补丁] 默认使用平台官方默认圆点（数字 = 标注序号 1~114，呼吸动画正常）；
-        //          仅 URL 加 ?custom=1 时启用自定义图片图标（img/热点标记-激活.png）。
-        const __ssUseCustom = new URLSearchParams(location.search).has('custom');
-        if (__ssUseCustom) {
         // [本补丁] 所有标注统一使用 img/热点标记-激活.png（1.62x，无呼吸，用户指定试用此图）：
         //          选中/取消切换保持同一张图（后续如需区分再改回 base/激活 双图）。
         //          异步加载，失败回退官方圆点。像素大小按光效实际像素等比换算与官方标记一致。
@@ -82351,7 +82347,6 @@ class Annotation extends Script {
             const t = this._markerTex[this._markerActive ? 'active' : 'base'];
             if (t) this._applyMarkerTex(t);
         };
-        }   // __ssUseCustom
         // Create material the base and overlay material
         this.materials = [
             Annotation._createHotspotMaterial(this.texture, {
