@@ -1,125 +1,149 @@
 /**
- * pano-layer.js —— 相机出生点全景背景层
+ * pano-layer.js —— 全景背景（官方 Skybox 方案）
  * ------------------------------------------------------------
- * 在相机初始位置（settings.json cameras[0].initial.position）放置一个
- * 内部可透视的大球体，贴上 img/pano.jpg 等距柱状全景图。
- * 相机位于球内时，四周/上下均显示全景（作为入场环境背景）。
+ * 用引擎原生 Skybox（cubemap）承接等距柱状全景图 img/pano.jpg，
+ * 替换上一版“实体球皮”方案：
+ *   - 无实体网格 → 不会有黑球/深度/遮挡/破面问题；
+ *   - 天空盒由引擎按相机方向采样，移动镜头天然正确；
+ *   - 方位校准烘焙进面片纹理（绕 Y 旋转），无需引擎四元数。
  *
- *   ?pano=0  关闭全景球
- *   ?pano=R  指定球半径（米，默认 55）
- *
- * 依赖 build.mjs 补丁暴露的：
- *   window.__ssplatApp    （AppBase，提供 loader 解析纹理）
- *   window.__ssplatPano   （Mesh / MeshInstance / StandardMaterial / SphereGeometry / Entity / CULLFACE_NONE）
- *   window.__ssplatCameraEntity（相机实体：距离球心 > R 时隐藏，避免球壁挡远景）
+ *   ?pano=0    关闭全景
+ *   ?panoRot=N 方位覆盖（度，默认 -20.7：全景图中心/正门对准初始视线）
+ *   ?panoCube=N 每面边长（默认 1024，越大越清晰、越耗内存）
  */
 (() => {
     const params = new URLSearchParams(location.search);
     if (params.get('pano') === '0') return;
-    const RADIUS = (() => { const r = parseFloat(params.get('pano')); return Number.isFinite(r) && r > 10 ? r : 55; })();
-
-    let state = null; // { center:{x,y,z}, mat, ent, mi, done }
-    let alive = false;
+    const ROT_OFFSET = (() => {
+        const r = parseFloat(params.get('panoRot'));
+        return Number.isFinite(r) ? r : -20.7;
+    })(); // 度
+    const FACE = (() => {
+        const n = parseInt(params.get('panoCube'), 10);
+        return Number.isFinite(n) && n >= 256 && n <= 2048 ? n : 1024;
+    })();
 
     const tick = () => {
         const app = window.__ssplatApp;
-        const gl = window.__ssplatPano;
         const cam = window.__ssplatCameraEntity;
-        if (!app || !gl || !cam) { setTimeout(tick, 300); return; }
-
-        if (!state) {
-            // 出生点：settings.json 首相机 initial.position
-            fetch('./settings.json')
-                .then((r) => r.json())
-                .then((s) => {
-                    const c = s.cameras && s.cameras[0] && s.cameras[0].initial && s.cameras[0].initial.position;
-                    if (!c) { console.warn('[pano] settings.json 无 cameras[0].initial.position，使用默认原点'); }
-                    init(app, gl, c ? { x: c[0], y: c[1], z: c[2] } : { x: 0, y: 0, z: 0 });
-                })
-                .catch((e) => console.warn('[pano] settings.json 读取失败：', e));
-            state = null;
-            setTimeout(tick, 300);
-            return;
-        }
-        if (!state.done) { setTimeout(tick, 300); return; }
-
-        // 相机 / 球心 距离：超出半径一半时球已不包裹相机，隐藏球体避免球壁挡远景
-        if (!alive) { alive = true; }
-        const p = cam.getPosition();
-        const dx = p.x - state.center.x, dy = p.y - state.center.y, dz = p.z - state.center.z;
-        const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        const vis = d < state.radius && state.ready;
-        if (state.mi.enabled !== vis) { state.mi.enabled = vis; app.renderNextFrame = true; }
-        setTimeout(tick, 500);
+        if (!app || !cam) { setTimeout(tick, 300); return; }
+        if (!app.scene.skybox) { init(app); }
+        setTimeout(tick, 1000);
     };
 
-    const init = (app, gl, center) => {
-        // 纹理：img/pano.jpg（等距柱状）
-        //   - 引擎未注册 jpg handler → Image 直读；
-        //   - 强制 2048x1024 二次幂画布重绘（1280x641 非二次幂在 WebGPU 下 mipmap 对齐错误 → 黑块/破面）；
-        //   - 水平镜像（scale -1,1）：等距图按球内观察方向采样会左右镜像，预翻转修正；
-        //   - 上传完毕以 levels 直传（与标注纹理已验证路径一致）。
+    // ----------------------------------------------------------
+    // 等距柱状 → 立方体贴图（6 面，含绕 Y 旋转烘焙）
+    // 方向约定：dir = (dx,dy,dz)；θ = atan2(dx,dz)，φ = asin(dy)
+    // 采样源：u = θ/(2π)+0.5，v = 0.5 - φ/π（与引擎 sampleEquirect 一致，无需镜像）
+    // ----------------------------------------------------------
+    const equirectToCubemap = (srcImg) => {
+        const srcW = srcImg.naturalWidth, srcH = srcImg.naturalHeight;
+        const sCv = document.createElement('canvas');
+        sCv.width = srcW; sCv.height = srcH;
+        const sG = sCv.getContext('2d', { willReadFrequently: true });
+        sG.drawImage(srcImg, 0, 0);
+        const sData = sG.getImageData(0, 0, srcW, srcH).data;
+
+        const faces = [
+            // PC cubemap 顺序：+X, -X, +Y, -Y, +Z, -Z
+            { x: 1, y: -1, z: -1, u: 'z', v: 'y' }, // px
+            { x: -1, y: -1, z: 1, u: 'z', v: 'y' }, // nx
+            { x: 1, y: 1, z: -1, u: 'x', v: 'z', sw: -1 }, // py（顶面取向微调）
+            { x: 1, y: -1, z: 1, u: 'x', v: 'z', sw: -1 }, // ny
+            { x: 1, y: -1, z: 1, u: 'x', v: 'y' }, // pz
+            { x: -1, y: -1, z: -1, u: 'x', v: 'y' } // nz
+        ];
+        // 物理朝向（每面法线）。dir 由 (u,v) 与基向量合成：
+        // face 基：u 轴向右、v 轴向上，法线 n。dir = u*uAxis + v*vAxis + n
+        const AXIS = {
+            px: { n: [1, 0, 0], a: [0, 0, -1], b: [0, 1, 0] },
+            nx: { n: [-1, 0, 0], a: [0, 0, 1], b: [0, 1, 0] },
+            py: { n: [0, 1, 0], a: [1, 0, 0], b: [0, 0, 1] },
+            ny: { n: [0, -1, 0], a: [1, 0, 0], b: [0, 0, -1] },
+            pz: { n: [0, 0, 1], a: [1, 0, 0], b: [0, 1, 0] },
+            nz: { n: [0, 0, -1], a: [-1, 0, 0], b: [0, 1, 0] }
+        };
+        const order = ['px', 'nx', 'py', 'ny', 'pz', 'nz'];
+        const rotRad = (ROT_OFFSET * Math.PI) / 180;
+        const cosR = Math.cos(rotRad), sinR = Math.sin(rotRad);
+
+        const half = FACE / 2;
+        const out = [];
+        for (const faceName of order) {
+            const { n, a, b } = AXIS[faceName];
+            const cv = document.createElement('canvas');
+            cv.width = FACE; cv.height = FACE;
+            const g = cv.getContext('2d');
+            const id = g.createImageData(FACE, FACE);
+            const d = id.data;
+            for (let py = 0; py < FACE; py++) {
+                const vv = (py + 0.5) / half - 1; // -1..1（向上）
+                for (let px = 0; px < FACE; px++) {
+                    const uu = (px + 0.5) / half - 1; // -1..1（向右）
+                    // dir = uu*a + vv*b + n，归一再绕 Y 旋转
+                    let dx = uu * a[0] + vv * b[0] + n[0];
+                    let dy = uu * a[1] + vv * b[1] + n[1];
+                    let dz = uu * a[2] + vv * b[2] + n[2];
+                    const inv = 1 / Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    dx *= inv; dy *= inv; dz *= inv;
+                    // 绕 Y 旋转（顺时针为正，align 全景中心到初始视线）
+                    const rx = dx * cosR + dz * sinR;
+                    const rz = -dx * sinR + dz * cosR;
+                    dx = rx; dz = rz;
+                    // → 等距 uv
+                    const u = (Math.atan2(dx, dz) / (2 * Math.PI) + 0.5) % 1;
+                    const v = 0.5 - Math.asin(Math.max(-1, Math.min(1, dy))) / Math.PI;
+                    const sx = Math.min(srcW - 1, Math.max(0, u * srcW));
+                    const sy = Math.min(srcH - 1, Math.max(0, v * srcH));
+                    // 双线性
+                    const x0 = Math.floor(sx), y0 = Math.floor(sy);
+                    const x1 = Math.min(srcW - 1, x0 + 1), y1 = Math.min(srcH - 1, y0 + 1);
+                    const fx = sx - x0, fy = sy - y0, nfx = 1 - fx, nfy = 1 - fy;
+                    const o00 = (y0 * srcW + x0) * 4, o10 = (y0 * srcW + x1) * 4;
+                    const o01 = (y1 * srcW + x0) * 4, o11 = (y1 * srcW + x1) * 4;
+                    const i = (py * FACE + px) * 4;
+                    for (let c = 0; c < 3; c++) {
+                        const v00 = sData[o00 + c], v10 = sData[o10 + c];
+                        const v01 = sData[o01 + c], v11 = sData[o11 + c];
+                        const top = v00 * nfx + v10 * fx;
+                        const bot = v01 * nfx + v11 * fx;
+                        d[i + c] = top * nfy + bot * fy;
+                    }
+                    d[i + 3] = 255;
+                }
+            }
+            g.putImageData(id, 0, 0);
+            out.push(new Uint8Array(id.data.buffer.slice(0)));
+        }
+        return out; // 6 × Uint8Array(FACE*FACE*4)，顺序 px,nx,py,ny,pz,nz
+    };
+
+    const init = (app) => {
         const img = new Image();
         img.onload = () => {
             try {
-                const W = 2048, H = 1024;
-                const cv = document.createElement('canvas');
-                cv.width = W; cv.height = H;
-                const g = cv.getContext('2d');
-                g.translate(W, 0); g.scale(-1, 1);
-                g.drawImage(img, 0, 0, W, H);
-                const id = g.getImageData(0, 0, W, H);
+                const faces = equirectToCubemap(img);
                 const dv = app.graphicsDevice;
-                const tex = new gl.Texture(dv, {
-                    width: W, height: H,
-                    format: gl.PIXELFORMAT_RGBA8,
-                    // 不用 mipmaps：WebGPU 下仅传 levels[0] 时自动 mip 链可能生成失败，
-                    // 相机拉远（采样低级别 mip）会整片黑块/破面。关闭后恒定用全分辨率：
-                    // 2K 纹理映射球壁 1:1，无远距闪烁、无黑圆。
+                const tex = new window.__ssplatPano.Texture(dv, {
+                    width: FACE, height: FACE,
+                    format: window.__ssplatPano.PIXELFORMAT_RGBA8,
+                    cubemap: true,
                     mipmaps: false,
-                    minFilter: gl.FILTER_LINEAR,
-                    magFilter: gl.FILTER_LINEAR,
-                    levels: [new Uint8Array(id.data.buffer)]
+                    minFilter: window.__ssplatPano.FILTER_LINEAR,
+                    magFilter: window.__ssplatPano.FILTER_LINEAR,
+                    levels: [faces]
                 });
-                build(app, gl, center, tex);
+                app.scene.skybox = tex;
+                app.scene.skyboxIntensity = 1;
+                app.scene.skyboxMip = 0;
+                app.renderNextFrame = true;
+                console.log('[pano] skybox 全景已就位 FACE=' + FACE + ' rotY=' + ROT_OFFSET.toFixed(1) + '°');
             } catch (err) {
-                console.warn('[pano] 纹理创建失败：', err);
+                console.warn('[pano] 全景纹理创建失败：', err);
             }
         };
         img.onerror = () => console.warn('[pano] 全景图加载失败：./img/pano.jpg');
         img.src = './img/pano.jpg';
-    };
-
-    const build = (app, gl, center, tex) => {
-        // 材质：自发光贴图 + 无光照 + 双侧渲染（球内部可见）+ 不透明
-        const mat = new gl.StandardMaterial();
-        mat.emissiveMap = tex;
-        mat.emissive.set(1, 1, 1);
-        mat.useLighting = false;
-        mat.cull = gl.CULLFACE_NONE;
-        mat.update();
-
-        // 球体网格：正确参数 latitudeBands/longitudeBands，96x48 细分避免极点大三角破面
-        const geom = new gl.SphereGeometry({ radius: RADIUS, latitudeBands: 48, longitudeBands: 96 });
-        const mesh = gl.Mesh.fromGeometry(app.graphicsDevice, geom);
-        const mi = new gl.MeshInstance(mesh, mat);
-
-        const ent = new gl.Entity('pano-layer');
-        ent.addComponent('render', { meshInstances: [mi] });
-        ent.setPosition(center.x, center.y, center.z);
-        // 方位校准：默认球面 u=0.5（全景图中心/正门）朝 +Z；
-        // 相机初始视线 fwd=(-0.354,-0.002,0.935) ≈ 自 +Z 顺时针 20.7°，绕 Y 转 -20.7° 对齐；
-        // ?panoRot=deg 可覆盖微调（内侧采样经镜像画布后无需再补 180）。
-        const rotY = (() => {
-            const r = parseFloat(params.get('panoRot'));
-            return Number.isFinite(r) ? r : -20.7;
-        })();
-        ent.setEulerAngles(0, rotY, 0);
-        app.root.addChild(ent);
-
-        state = { center, mat, ent, mi, radius: RADIUS, ready: true, done: true };
-        app.renderNextFrame = true;
-        console.log('[pano] 全景球已就位 @', center.x.toFixed(2), center.y.toFixed(2), center.z.toFixed(2), 'R=' + RADIUS, 'rotY=' + rotY.toFixed(1) + '°');
     };
 
     setTimeout(tick, 500);
