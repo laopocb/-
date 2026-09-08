@@ -68,7 +68,7 @@ const HTML_PATCHES = [
             '                window.__ssplatFlip = u.searchParams.get(\'flip\') !== \'0\';',
                 '                window.__ssplatRot = u.searchParams.get(\'rot\') || \'\';',
                 '                window.__ssplatColdbg = u.searchParams.has(\'coldbg\');',
-                '                // [本补丁] 移动端强制 WebGL2（Android Chrome 的 WebGPU 在部分 GPU 上初始化失败 → 白屏）；
+                '                // [本补丁] 移动端强制 WebGL2（Android Chrome 的 WebGPU 在部分 GPU 上初始化失败 → 白屏）；',
                 '                //          桌面保持引擎自动（WebGPU 优先）。可用 ?webgl=1 强制。',
                 '                window.__ssplatForceWebgl = u.searchParams.has(\'webgl\');',
                 '                window.__ssplatMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);',

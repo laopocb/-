@@ -89831,12 +89831,15 @@ const loadSkybox = (app, url) => {
     });
 };
 const createApp = async (canvas, config) => {
-    const useWebGPU = config.renderer === 'webgpu';
+    // [本补丁] 渲染后端：移动端（UA 含 Mobile/Android/iPhone/iPad）或 ?webgl=1 强制 WebGL2，
+    //          部分安卓 Chrome 的 WebGPU 在 Adreno 等 GPU 上初始化失败 → 加载页完成后白屏；
+    //          桌面保持引擎自动（WebGPU 优先）。
+    const useWebGPU = (window.__ssplatMobile || window.__ssplatForceWebgl) ? false : config.renderer === 'webgpu';
     // Create the graphics device. The engine auto-appends WebGL2/null fallbacks
     // when WebGPU isn't supported. Request xrCompatible so the device — WebGPU
     // (via XRGPUBinding) or the WebGL fallback — is usable for AR/VR.
     const device = await createGraphicsDevice(canvas, {
-        deviceTypes: useWebGPU ? ['webgpu'] : [],
+        deviceTypes: useWebGPU ? ['webgpu'] : ((window.__ssplatMobile || window.__ssplatForceWebgl) ? ['webgl2'] : []),
         antialias: false,
         depth: true,
         stencil: false,
