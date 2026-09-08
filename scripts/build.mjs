@@ -52,7 +52,7 @@ const VIEWER_FILES = ['index.html', 'index.js', 'index.css'];
 
 // 功能模块清单：一个功能 = 一个 JS 文件
 const MODULES = ['camlog', 'wall-layer', 'annotations-poster', 'camera-constraint'];
-const MODULE_VERSION = '48'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
+const MODULE_VERSION = '49'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
 
 // ---------- index.html 补丁 ----------
 const HTML_PATCHES = [
@@ -624,6 +624,15 @@ const JS_PATCHES = [
             '                               // [本补丁] 同上：退出锁定后立即重进会 reject，吞掉即可',
             '                               this._element?.requestPointerLock()?.catch(() => {});'
         ].join('\n')
+    },
+    {
+        name: 'index.js-移动端默认开启游戏控制（方向摇杆）：touch 设备且未手动设置时 gamingControls=true',
+        target: '        gamingControls: localStorage.getItem(\'gamingControls\') === \'true\'',
+        replacement: [
+            '        // [本补丁] 手机端默认开启游戏控制（方向摇杆）：touch 设备且用户从未手动设置时默认 true，',
+            '        //          落地即用 move.png D-pad 方向控制；已手动设置过则遵循用户选择（桌面键盘不受影响）。',
+            '        gamingControls: (localStorage.getItem(\'gamingControls\') === null && (\'ontouchstart\' in window || navigator.maxTouchPoints > 0)) || localStorage.getItem(\'gamingControls\') === \'true\''
+        ].join('\n')
     }
 ];
 
@@ -661,7 +670,27 @@ const main = async () => {
             if (!/<\/body>/i.test(output)) {
                 throw new Error('构建失败：官方 index.html 中未找到 </body>，无法注入模块脚本。');
             }
-            output = output.replace(/<\/body>/i, MODULE_SCRIPTS + '\n</body>');
+            // 移动端方向控制（虚拟摇杆 D-pad）画皮：官方 joystick 换成 img/move.png 金色图标
+            const JOYSTICK_CSS = [
+                '<style id="__ssplatJoystickSkin">',
+                '  #joystickBase,',
+                '  #joystickBase.mode-2d {',
+                '    width: 120px;',
+                '    height: 120px;',
+                '    border-radius: 50%;',
+                '    border: none;',
+                '    touch-action: none;',
+                '    background: url(./img/move.png) center / 100% 100% no-repeat !important;',
+                '    background-color: transparent !important;',
+                '  }',
+                '  #joystickBase > #joystick {',
+                '    background-color: rgba(255, 255, 255, 0.30);',
+                '    box-shadow: none;',
+                '    opacity: 0.45;',
+                '  }',
+                '</style>',
+            ].join('\n');
+            output = output.replace(/<\/body>/i, MODULE_SCRIPTS + '\n' + JOYSTICK_CSS + '\n</body>');
             console.log(`  [注入] 功能模块脚本 × ${MODULES.length}（${MODULES.map((n) => `${n}.js`).join(' / ')}）`);
         } else if (file === 'index.js') {
             for (const patch of JS_PATCHES) {
