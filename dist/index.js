@@ -82262,13 +82262,12 @@ class Annotation extends Script {
         Annotation._initializeStatic(this.app);
         // Create texture
         this.texture = Annotation._createHotspotTexture(this.app, this.label);
-        // [本补丁] 所有标注改用用户提供的发光图片标记（透明底金色光效，不再是编号圆点）：
-        //          2号用圆环图 img/热点标记1.png(2.01x)，其余用 img/热点标记.png(1.62x)；
-        //          选中(annotation.activate)全部切换为 img/热点标记-激活.png(1.62x)，取消(deactivate)恢复。
+        // [本补丁] 所有标注统一使用用户提供的发光图 img/热点标记.png（1.62x，无呼吸）：
+        //          选中(annotation.activate)切换为 img/热点标记-激活.png，取消(deactivate)恢复。
         //          异步加载，失败回退官方圆点。像素大小按光效实际像素等比换算与官方标记一致。
         this._markerKey = this.label;
         this._markerActive = false;
-        this._markerBoost = this._markerKey === '2' ? 2.01 : 1.62;
+        this._markerBoost = 1.62;
         this._markerTex = { base: null, active: null };
         if (this._markerKey) {
             const dv = this.app.graphicsDevice;
@@ -82277,7 +82276,7 @@ class Annotation extends Script {
                 t.setSource(bmp);
                 return t;
             }).catch((e) => { console.warn('[marker] 图片加载失败：', url, e); return null; });
-            const baseUrl = this._markerKey === '2' ? './img/热点标记1.png' : './img/热点标记.png';
+            const baseUrl = './img/热点标记.png';
             Promise.all([mkTex(baseUrl), mkTex('./img/热点标记-激活.png')]).then((ts) => {
                 if (!this.materials || !this.materials.length || !ts[0]) return;
                 this._markerTex.base = ts[0];
@@ -82293,7 +82292,7 @@ class Annotation extends Script {
         this._setMarkerActive = (active) => {
             if (!this._markerKey) return;
             this._markerActive = !!active;
-            this._markerBoost = this._markerActive ? 1.62 : (this._markerKey === '2' ? 2.01 : 1.62);
+            this._markerBoost = 1.62;
             const t = this._markerTex[this._markerActive ? 'active' : 'base'];
             if (t) this._applyMarkerTex(t);
         };
@@ -82506,16 +82505,9 @@ class Annotation extends Script {
         const cameraRotation = Annotation.camera.getRotation();
         this._updateHotspotTransform(this.entity, cameraRotation);
         // Calculate scale based on view depth to maintain constant screen size
-        const __b = this._calculateScreenSpaceScale(viewDepth);
-        // [本补丁] 标注呼吸动画：约1秒周期 ±12% 缩放；选中(active)即时停止呼吸并保持等比大小。
-        let scale = __b;
-        if (this._markerKey) {
-            if (!this._markerActive) {
-                scale = __b * this._markerBoost * (1 + 0.12 * Math.sin(performance.now() * Math.PI * 2 / 1000));
-            } else {
-                scale = __b * this._markerBoost;
-            }
-        }
+        // [本补丁] 标注恒定大小：等比放大至与官方圆点一致的像素尺寸（无呼吸动画）。
+        let scale = this._calculateScreenSpaceScale(viewDepth);
+        if (this._markerKey) scale = scale * this._markerBoost;
         this.entity.setLocalScale(scale, scale, scale);
     }
     /**
