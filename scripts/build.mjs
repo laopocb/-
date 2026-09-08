@@ -52,7 +52,7 @@ const VIEWER_FILES = ['index.html', 'index.js', 'index.css'];
 
 // 功能模块清单：一个功能 = 一个 JS 文件
 const MODULES = ['camlog', 'wall-layer', 'annotations-poster', 'camera-constraint', 'pano-layer'];
-const MODULE_VERSION = '72'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
+const MODULE_VERSION = '73'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
 
 // ---------- index.html 补丁 ----------
 const HTML_PATCHES = [
@@ -66,8 +66,12 @@ const HTML_PATCHES = [
             '            (function () {',
             '                const u = new URL(location.href);',
             '                window.__ssplatFlip = u.searchParams.get(\'flip\') !== \'0\';',
-            '                window.__ssplatRot = u.searchParams.get(\'rot\') || \'\';',
-            '                window.__ssplatColdbg = u.searchParams.has(\'coldbg\');',
+                '                window.__ssplatRot = u.searchParams.get(\'rot\') || \'\';',
+                '                window.__ssplatColdbg = u.searchParams.has(\'coldbg\');',
+                '                // [本补丁] 移动端强制 WebGL2（Android Chrome 的 WebGPU 在部分 GPU 上初始化失败 → 白屏）；
+                '                //          桌面保持引擎自动（WebGPU 优先）。可用 ?webgl=1 强制。',
+                '                window.__ssplatForceWebgl = u.searchParams.has(\'webgl\');',
+                '                window.__ssplatMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);',
             '            })();',
             '        </script>',
             '        <link rel="stylesheet" href="./index.css">'
@@ -640,6 +644,23 @@ const JS_PATCHES = [
             '        //          苹果端/移动端进入即显示 move.png 方向摇杆，不再依赖设备/存储判断；',
             '        //          仍可用 G 键或设置面板手动关闭。',
             '        gamingControls: true'
+        ].join('\n')
+    },
+    {
+        name: 'index.js-渲染后端：移动端或 ?webgl=1 强制 WebGL2（真机 WebGPU 白屏兜底），桌面自动',
+        target: '    const useWebGPU = config.renderer === \'webgpu\';',
+        replacement: [
+            '    // [本补丁] 渲染后端：移动端（UA 含 Mobile/Android/iPhone/iPad）或 ?webgl=1 强制 WebGL2，',
+            '    //          部分安卓 Chrome 的 WebGPU 在 Adreno 等 GPU 上初始化失败 → 加载页完成后白屏；',
+            '    //          桌面保持引擎自动（WebGPU 优先）。',
+            '    const useWebGPU = (window.__ssplatMobile || window.__ssplatForceWebgl) ? false : config.renderer === \'webgpu\';'
+        ].join('\n')
+    },
+    {
+        name: 'index.js-图形设备 deviceTypes：强制 WebGL2 时传 [webgl2]',
+        target: '        deviceTypes: useWebGPU ? [\'webgpu\'] : [],',
+        replacement: [
+            '        deviceTypes: useWebGPU ? [\'webgpu\'] : ((window.__ssplatMobile || window.__ssplatForceWebgl) ? [\'webgl2\'] : []),'
         ].join('\n')
     }
 ];
