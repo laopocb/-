@@ -82271,11 +82271,29 @@ class Annotation extends Script {
         this._markerTex = { base: null, active: null };
         if (this._markerKey) {
             const dv = this.app.graphicsDevice;
-            const mkTex = (url) => fetch(url).then((r) => r.blob()).then((b) => createImageBitmap(b)).then((bmp) => {
-                const t = new Texture(dv, { width: bmp.width, height: bmp.height, format: PIXELFORMAT_RGBA8, mipmaps: false, magFilter: FILTER_LINEAR, minFilter: FILTER_LINEAR });
-                t.setSource(bmp);
-                return t;
-            }).catch((e) => { console.warn('[marker] 图片加载失败：', url, e); return null; });
+            // [修复] alpha 透明通道：createImageBitmap+setSource 在 WebGPU 下 alpha 未正确上传 → 透明区显示黑。
+            //       改用官方已验证的渲染路径：Image→canvas(2次幂)→getImageData(逐像素RGBA)→levels 上传；
+            //       与官方 _createHotspotTexture 完全一致（官方半透明描边渲染正常即证明该路径 alpha 正确）。
+            const mkTex = (url) => new Promise((res) => {
+                const im = new Image();
+                im.onload = () => {
+                    try {
+                        const size = 128;
+                        const cv = document.createElement('canvas'); cv.width = size; cv.height = size;
+                        const g = cv.getContext('2d');
+                        const s = Math.min(size / im.naturalWidth, size / im.naturalHeight);
+                        const dw = im.naturalWidth * s, dh = im.naturalHeight * s;
+                        g.drawImage(im, (size - dw) / 2, (size - dh) / 2, dw, dh);
+                        const id = g.getImageData(0, 0, size, size);
+                        const d = id.data;
+                        for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 255) { d[i] = 255; d[i + 1] = 255; d[i + 2] = 255; } }
+                        const t = new Texture(dv, { width: size, height: size, format: PIXELFORMAT_RGBA8, mipmaps: false, magFilter: FILTER_LINEAR, minFilter: FILTER_LINEAR, levels: [new Uint8Array(d.buffer)] });
+                        res(t);
+                    } catch (e) { console.warn('[marker] 纹理生成失败：', url, e); res(null); }
+                };
+                im.onerror = () => { console.warn('[marker] 图片加载失败：', url); res(null); };
+                im.src = url;
+            });
             const baseUrl = './img/热点标记-激活.png';
             Promise.all([mkTex(baseUrl), mkTex('./img/热点标记-激活.png')]).then((ts) => {
                 if (!this.materials || !this.materials.length || !ts[0]) return;
