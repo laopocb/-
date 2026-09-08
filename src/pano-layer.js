@@ -20,7 +20,7 @@
     })(); // 度
     const FACE = (() => {
         const n = parseInt(params.get('panoCube'), 10);
-        return Number.isFinite(n) && n >= 256 && n <= 2048 ? n : 1024;
+        return Number.isFinite(n) && n >= 256 && n <= 2048 ? n : 512;
     })();
 
     const tick = () => {
