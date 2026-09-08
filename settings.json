@@ -70,7 +70,8 @@
       ],
       "title": "1_点",
       "text": "",
-      "image": "点位/A1.jpg"
+      "image": "点位/A1.jpg",
+      "_d": "27.6"
     },
     {
       "position": [
@@ -80,7 +81,8 @@
       ],
       "title": "2_点",
       "text": "",
-      "image": "点位/A2.jpg"
+      "image": "点位/A2.jpg",
+      "_d": "20.9"
     },
     {
       "position": [
@@ -90,7 +92,8 @@
       ],
       "title": "3_点",
       "text": "",
-      "image": "点位/A3.jpg"
+      "image": "点位/A3.jpg",
+      "_d": "15.6"
     },
     {
       "position": [
@@ -100,7 +103,8 @@
       ],
       "title": "4_点",
       "text": "",
-      "image": "点位/A4.jpg"
+      "image": "点位/A4.jpg",
+      "_d": "8.9"
     },
     {
       "position": [
@@ -110,7 +114,8 @@
       ],
       "title": "5_点",
       "text": "",
-      "image": "点位/A5.jpg"
+      "image": "点位/A5.jpg",
+      "_d": "11.6"
     },
     {
       "position": [
@@ -120,7 +125,8 @@
       ],
       "title": "6_点",
       "text": "",
-      "image": "点位/A6.jpg"
+      "image": "点位/A6.jpg",
+      "_d": "14.1"
     },
     {
       "position": [
@@ -130,7 +136,8 @@
       ],
       "title": "8_点",
       "text": "",
-      "image": "点位/A8.jpg"
+      "image": "点位/A8.jpg",
+      "_d": "4.8"
     },
     {
       "position": [
@@ -140,7 +147,8 @@
       ],
       "title": "9_点",
       "text": "",
-      "image": "点位/A9.jpg"
+      "image": "点位/A8.jpg",
+      "_d": "1.9"
     },
     {
       "position": [
@@ -150,7 +158,8 @@
       ],
       "title": "10_点",
       "text": "",
-      "image": "点位/A10.jpg"
+      "image": "点位/A10.jpg",
+      "_d": "10.9"
     },
     {
       "position": [
@@ -160,7 +169,8 @@
       ],
       "title": "11_点",
       "text": "",
-      "image": "点位/A11.jpg"
+      "image": "点位/A11.jpg",
+      "_d": "13.0"
     },
     {
       "position": [
@@ -170,7 +180,8 @@
       ],
       "title": "12_点",
       "text": "",
-      "image": "点位/A12.jpg"
+      "image": "点位/A12.jpg",
+      "_d": "15.6"
     },
     {
       "position": [
@@ -180,7 +191,8 @@
       ],
       "title": "13_点",
       "text": "",
-      "image": "点位/A13.jpg"
+      "image": "点位/A13.jpg",
+      "_d": "18.4"
     },
     {
       "position": [
@@ -190,7 +202,8 @@
       ],
       "title": "14_点",
       "text": "",
-      "image": "点位/A14.jpg"
+      "image": "点位/A14.jpg",
+      "_d": "28.9"
     },
     {
       "position": [
@@ -200,7 +213,8 @@
       ],
       "title": "15_点",
       "text": "",
-      "image": "点位/A15.jpg"
+      "image": "点位/A15.jpg",
+      "_d": "29.8"
     },
     {
       "position": [
@@ -210,7 +224,8 @@
       ],
       "title": "16_点",
       "text": "",
-      "image": "点位/A16.jpg"
+      "image": "点位/A16.jpg",
+      "_d": "30.7"
     },
     {
       "position": [
@@ -220,7 +235,8 @@
       ],
       "title": "17_点",
       "text": "",
-      "image": "点位/A17.jpg"
+      "image": "点位/A17.jpg",
+      "_d": "39.3"
     },
     {
       "position": [
@@ -230,7 +246,8 @@
       ],
       "title": "18_点",
       "text": "",
-      "image": "点位/A18 (2).jpg"
+      "image": "点位/A18 (2).jpg",
+      "_d": "39.7"
     },
     {
       "position": [
@@ -240,7 +257,8 @@
       ],
       "title": "19_点",
       "text": "",
-      "image": "点位/A19 (2).jpg"
+      "image": "点位/A19 (2).jpg",
+      "_d": "26.8"
     },
     {
       "position": [
@@ -250,7 +268,8 @@
       ],
       "title": "20_点",
       "text": "",
-      "image": "点位/A20 (2).jpg"
+      "image": "点位/A20 (2).jpg",
+      "_d": "27.6"
     },
     {
       "position": [
@@ -260,7 +279,8 @@
       ],
       "title": "21_点",
       "text": "",
-      "image": "点位/A21 (2).jpg"
+      "image": "点位/A21 (2).jpg",
+      "_d": "28.4"
     },
     {
       "position": [
@@ -270,7 +290,8 @@
       ],
       "title": "22_点",
       "text": "",
-      "image": "点位/A22 (2).jpg"
+      "image": "点位/A22 (2).jpg",
+      "_d": "27.8"
     },
     {
       "position": [
@@ -280,7 +301,8 @@
       ],
       "title": "23_点",
       "text": "",
-      "image": "点位/A23 (2).jpg"
+      "image": "点位/A23 (2).jpg",
+      "_d": "29.4"
     },
     {
       "position": [
@@ -290,7 +312,8 @@
       ],
       "title": "24_点",
       "text": "",
-      "image": "点位/A24 (2).jpg"
+      "image": "点位/A24 (2).jpg",
+      "_d": "30.4"
     },
     {
       "position": [
@@ -300,7 +323,8 @@
       ],
       "title": "25_点",
       "text": "",
-      "image": "点位/A25 (2).jpg"
+      "image": "点位/A25 (2).jpg",
+      "_d": "31.4"
     },
     {
       "position": [
@@ -310,7 +334,8 @@
       ],
       "title": "26_点",
       "text": "",
-      "image": "点位/A26 (2).jpg"
+      "image": "点位/A26 (2).jpg",
+      "_d": "32.4"
     },
     {
       "position": [
@@ -320,7 +345,8 @@
       ],
       "title": "27_点",
       "text": "",
-      "image": "点位/A27 (2).jpg"
+      "image": "点位/A27 (2).jpg",
+      "_d": "33.6"
     },
     {
       "position": [
@@ -330,7 +356,8 @@
       ],
       "title": "28_点",
       "text": "",
-      "image": "点位/A28.jpg"
+      "image": "点位/A28.jpg",
+      "_d": "34.2"
     },
     {
       "position": [
@@ -340,7 +367,8 @@
       ],
       "title": "29_点",
       "text": "",
-      "image": "点位/A29.jpg"
+      "image": "点位/A29.jpg",
+      "_d": "34.5"
     },
     {
       "position": [
@@ -350,7 +378,8 @@
       ],
       "title": "30_点",
       "text": "",
-      "image": "点位/A30.jpg"
+      "image": "点位/A30.jpg",
+      "_d": "34.1"
     },
     {
       "position": [
@@ -360,7 +389,8 @@
       ],
       "title": "31_点",
       "text": "",
-      "image": "点位/A31.jpg"
+      "image": "点位/A31.jpg",
+      "_d": "33.8"
     },
     {
       "position": [
@@ -370,7 +400,8 @@
       ],
       "title": "32_点",
       "text": "",
-      "image": "点位/A32.jpg"
+      "image": "点位/A32.jpg",
+      "_d": "32.8"
     },
     {
       "position": [
@@ -380,7 +411,8 @@
       ],
       "title": "33_点",
       "text": "",
-      "image": "点位/A33.jpg"
+      "image": "点位/A33.jpg",
+      "_d": "41.2"
     },
     {
       "position": [
@@ -390,7 +422,8 @@
       ],
       "title": "34_点",
       "text": "",
-      "image": "点位/A34.jpg"
+      "image": "点位/A34.jpg",
+      "_d": "40.4"
     },
     {
       "position": [
@@ -400,7 +433,8 @@
       ],
       "title": "35_点",
       "text": "",
-      "image": "点位/A35.jpg"
+      "image": "点位/A35.jpg",
+      "_d": "39.2"
     },
     {
       "position": [
@@ -410,7 +444,8 @@
       ],
       "title": "36_点",
       "text": "",
-      "image": "点位/A36.jpg"
+      "image": "点位/A36.jpg",
+      "_d": "40.1"
     },
     {
       "position": [
@@ -420,7 +455,8 @@
       ],
       "title": "37_点",
       "text": "",
-      "image": "点位/A37.jpg"
+      "image": "点位/A37.jpg",
+      "_d": "39.4"
     },
     {
       "position": [
@@ -430,7 +466,8 @@
       ],
       "title": "38_点",
       "text": "",
-      "image": "点位/A1.jpg"
+      "image": "点位/A1.jpg",
+      "_d": "38.6"
     },
     {
       "position": [
@@ -440,7 +477,8 @@
       ],
       "title": "39_点",
       "text": "",
-      "image": "点位/A39.jpg"
+      "image": "点位/A39.jpg",
+      "_d": "37.3"
     },
     {
       "position": [
@@ -450,7 +488,8 @@
       ],
       "title": "40_点",
       "text": "",
-      "image": "点位/A40(1).jpg"
+      "image": "点位/A40(1).jpg",
+      "_d": "36.3"
     },
     {
       "position": [
@@ -460,7 +499,8 @@
       ],
       "title": "41_点",
       "text": "",
-      "image": "点位/A41.jpg"
+      "image": "点位/A41.jpg",
+      "_d": "35.9"
     },
     {
       "position": [
@@ -470,7 +510,8 @@
       ],
       "title": "42_点",
       "text": "",
-      "image": "点位/A42.jpg"
+      "image": "点位/A42.jpg",
+      "_d": "35.5"
     },
     {
       "position": [
@@ -480,7 +521,8 @@
       ],
       "title": "43_点",
       "text": "",
-      "image": "点位/A43.jpg"
+      "image": "点位/A43.jpg",
+      "_d": "35.3"
     },
     {
       "position": [
@@ -490,7 +532,8 @@
       ],
       "title": "44_点",
       "text": "",
-      "image": "点位/A44.jpg"
+      "image": "点位/A44.jpg",
+      "_d": "35.8"
     },
     {
       "position": [
@@ -500,7 +543,8 @@
       ],
       "title": "45_点",
       "text": "",
-      "image": "点位/A45.jpg"
+      "image": "点位/A45.jpg",
+      "_d": "35.2"
     },
     {
       "position": [
@@ -510,7 +554,8 @@
       ],
       "title": "46_点",
       "text": "",
-      "image": "点位/A46 (2).jpg"
+      "image": "点位/A46 (2).jpg",
+      "_d": "33.5"
     },
     {
       "position": [
@@ -520,7 +565,8 @@
       ],
       "title": "47_点",
       "text": "",
-      "image": "点位/A47.JPG"
+      "image": "点位/A47.JPG",
+      "_d": "32.6"
     },
     {
       "position": [
@@ -530,7 +576,8 @@
       ],
       "title": "48_点",
       "text": "",
-      "image": "点位/A48.jpg"
+      "image": "点位/A48.jpg",
+      "_d": "33.7"
     },
     {
       "position": [
@@ -540,7 +587,8 @@
       ],
       "title": "49_点",
       "text": "",
-      "image": "点位/A49.jpg"
+      "image": "点位/A49.jpg",
+      "_d": "32.0"
     },
     {
       "position": [
@@ -550,7 +598,8 @@
       ],
       "title": "50_点",
       "text": "",
-      "image": "点位/A50.jpg"
+      "image": "点位/A50.jpg",
+      "_d": "32.6"
     },
     {
       "position": [
@@ -560,7 +609,8 @@
       ],
       "title": "51_点",
       "text": "",
-      "image": "点位/A51.jpg"
+      "image": "点位/A51.jpg",
+      "_d": "30.1"
     },
     {
       "position": [
@@ -570,7 +620,8 @@
       ],
       "title": "52_点",
       "text": "",
-      "image": "点位/A52.jpg"
+      "image": "点位/A52.jpg",
+      "_d": "31.6"
     },
     {
       "position": [
@@ -580,7 +631,8 @@
       ],
       "title": "53_点",
       "text": "",
-      "image": "点位/A53.jpg"
+      "image": "点位/A53.jpg",
+      "_d": "30.4"
     },
     {
       "position": [
@@ -590,7 +642,8 @@
       ],
       "title": "54_点",
       "text": "",
-      "image": "点位/A54.jpg"
+      "image": "点位/A54.jpg",
+      "_d": "29.4"
     },
     {
       "position": [
@@ -600,7 +653,8 @@
       ],
       "title": "55_点",
       "text": "",
-      "image": "点位/A55.jpg"
+      "image": "点位/A55.jpg",
+      "_d": "28.1"
     },
     {
       "position": [
@@ -610,7 +664,8 @@
       ],
       "title": "56_点",
       "text": "",
-      "image": "点位/A56.jpg"
+      "image": "点位/A56.jpg",
+      "_d": "26.9"
     },
     {
       "position": [
@@ -620,7 +675,8 @@
       ],
       "title": "57_点",
       "text": "",
-      "image": "点位/A57.jpg"
+      "image": "点位/A57.jpg",
+      "_d": "25.9"
     },
     {
       "position": [
@@ -630,7 +686,8 @@
       ],
       "title": "58_点",
       "text": "",
-      "image": "点位/A58.jpg"
+      "image": "点位/A58.jpg",
+      "_d": "24.5"
     },
     {
       "position": [
@@ -640,7 +697,8 @@
       ],
       "title": "59_点",
       "text": "",
-      "image": "点位/A59.jpg"
+      "image": "点位/A59.jpg",
+      "_d": "23.1"
     },
     {
       "position": [
@@ -650,7 +708,8 @@
       ],
       "title": "60_点",
       "text": "",
-      "image": "点位/A60.jpg"
+      "image": "点位/A60.jpg",
+      "_d": "21.0"
     },
     {
       "position": [
@@ -660,7 +719,8 @@
       ],
       "title": "61_点",
       "text": "",
-      "image": "点位/A61.jpg"
+      "image": "点位/A61.jpg",
+      "_d": "19.8"
     },
     {
       "position": [
@@ -670,7 +730,8 @@
       ],
       "title": "62_点",
       "text": "",
-      "image": "点位/A62.jpg"
+      "image": "点位/A62.jpg",
+      "_d": "19.0"
     },
     {
       "position": [
@@ -680,7 +741,8 @@
       ],
       "title": "63_点",
       "text": "",
-      "image": "点位/A63.jpg"
+      "image": "点位/A63.jpg",
+      "_d": "19.3"
     },
     {
       "position": [
@@ -690,7 +752,8 @@
       ],
       "title": "64_点",
       "text": "",
-      "image": "点位/A64.jpg"
+      "image": "点位/A64.jpg",
+      "_d": "20.6"
     },
     {
       "position": [
@@ -700,7 +763,8 @@
       ],
       "title": "65_点",
       "text": "",
-      "image": "点位/A65.JPG"
+      "image": "点位/A65.JPG",
+      "_d": "21.9"
     },
     {
       "position": [
@@ -710,7 +774,8 @@
       ],
       "title": "66_点",
       "text": "",
-      "image": "点位/A66.jpg"
+      "image": "点位/A66.jpg",
+      "_d": "23.3"
     },
     {
       "position": [
@@ -720,17 +785,8 @@
       ],
       "title": "67_点",
       "text": "",
-      "image": "点位/A67.jpg"
-    },
-    {
-      "position": [
-        11.9794435501099,
-        7.22057867050171,
-        23.2316417694092
-      ],
-      "title": "69_点",
-      "text": "",
-      "image": "点位/A69.jpg"
+      "image": "点位/A67.jpg",
+      "_d": "24.6"
     },
     {
       "position": [
@@ -740,7 +796,19 @@
       ],
       "title": "68_点",
       "text": "",
-      "image": "点位/A1.jpg"
+      "image": "点位/A1.jpg",
+      "_d": "29.7"
+    },
+    {
+      "position": [
+        11.9794435501099,
+        7.22057867050171,
+        23.2316417694092
+      ],
+      "title": "69_点",
+      "text": "",
+      "image": "点位/A69.jpg",
+      "_d": "28.1"
     },
     {
       "position": [
@@ -750,7 +818,8 @@
       ],
       "title": "70_点",
       "text": "",
-      "image": "点位/A70.jpg"
+      "image": "点位/A70.jpg",
+      "_d": "26.1"
     },
     {
       "position": [
@@ -760,7 +829,8 @@
       ],
       "title": "71_点",
       "text": "",
-      "image": "点位/A71.jpg"
+      "image": "点位/A71.jpg",
+      "_d": "24.7"
     },
     {
       "position": [
@@ -770,7 +840,8 @@
       ],
       "title": "72_点",
       "text": "",
-      "image": "点位/A72.jpg"
+      "image": "点位/A72.jpg",
+      "_d": "23.5"
     },
     {
       "position": [
@@ -780,7 +851,8 @@
       ],
       "title": "73_点",
       "text": "",
-      "image": "点位/A73.jpg"
+      "image": "点位/A73.jpg",
+      "_d": "20.0"
     },
     {
       "position": [
@@ -790,7 +862,8 @@
       ],
       "title": "74_点",
       "text": "",
-      "image": "点位/A74.jpg"
+      "image": "点位/A74.jpg",
+      "_d": "17.2"
     },
     {
       "position": [
@@ -800,7 +873,8 @@
       ],
       "title": "75_点",
       "text": "",
-      "image": "点位/A75.jpg"
+      "image": "点位/A75.jpg",
+      "_d": "15.6"
     },
     {
       "position": [
@@ -810,7 +884,8 @@
       ],
       "title": "76_点",
       "text": "",
-      "image": "点位/A76.jpg"
+      "image": "点位/A76.jpg",
+      "_d": "13.9"
     },
     {
       "position": [
@@ -820,7 +895,8 @@
       ],
       "title": "77_点",
       "text": "",
-      "image": "点位/A77.jpg"
+      "image": "点位/A77.jpg",
+      "_d": "13.5"
     },
     {
       "position": [
@@ -830,7 +906,8 @@
       ],
       "title": "78_点",
       "text": "",
-      "image": "点位/A78.jpg"
+      "image": "点位/A78.jpg",
+      "_d": "13.2"
     },
     {
       "position": [
@@ -840,7 +917,8 @@
       ],
       "title": "79_点",
       "text": "",
-      "image": "点位/A79.jpg"
+      "image": "点位/A79.jpg",
+      "_d": "19.6"
     },
     {
       "position": [
@@ -850,7 +928,8 @@
       ],
       "title": "80_点",
       "text": "",
-      "image": "点位/A80.jpg"
+      "image": "点位/A80.jpg",
+      "_d": "20.9"
     },
     {
       "position": [
@@ -860,7 +939,8 @@
       ],
       "title": "81_点",
       "text": "",
-      "image": "点位/A81.jpg"
+      "image": "点位/A81.jpg",
+      "_d": "23.3"
     },
     {
       "position": [
@@ -870,7 +950,8 @@
       ],
       "title": "82_点",
       "text": "",
-      "image": "点位/A82.jpg"
+      "image": "点位/A82.jpg",
+      "_d": "32.1"
     },
     {
       "position": [
@@ -880,7 +961,8 @@
       ],
       "title": "83_点",
       "text": "",
-      "image": "点位/A83.jpg"
+      "image": "点位/A83.jpg",
+      "_d": "32.6"
     },
     {
       "position": [
@@ -890,7 +972,8 @@
       ],
       "title": "84_点",
       "text": "",
-      "image": "点位/A84.jpg"
+      "image": "点位/A84.jpg",
+      "_d": "32.6"
     },
     {
       "position": [
@@ -900,7 +983,8 @@
       ],
       "title": "85_点",
       "text": "",
-      "image": "点位/A85.jpg"
+      "image": "点位/A85.jpg",
+      "_d": "32.7"
     },
     {
       "position": [
@@ -910,7 +994,8 @@
       ],
       "title": "86_点",
       "text": "",
-      "image": "点位/A86.jpg"
+      "image": "点位/A86.jpg",
+      "_d": "32.8"
     },
     {
       "position": [
@@ -920,7 +1005,8 @@
       ],
       "title": "87_点",
       "text": "",
-      "image": "点位/A87.jpg"
+      "image": "点位/A87.jpg",
+      "_d": "33.1"
     },
     {
       "position": [
@@ -930,7 +1016,8 @@
       ],
       "title": "88_点",
       "text": "",
-      "image": "点位/A88.jpg"
+      "image": "点位/A88.jpg",
+      "_d": "33.5"
     },
     {
       "position": [
@@ -940,7 +1027,8 @@
       ],
       "title": "89_点",
       "text": "",
-      "image": "点位/A1.jpg"
+      "image": "点位/A1.jpg",
+      "_d": "30.8"
     },
     {
       "position": [
@@ -950,7 +1038,8 @@
       ],
       "title": "90_点",
       "text": "",
-      "image": "点位/A90.jpg"
+      "image": "点位/A90.jpg",
+      "_d": "30.3"
     },
     {
       "position": [
@@ -960,7 +1049,8 @@
       ],
       "title": "91_点",
       "text": "",
-      "image": "点位/A91.jpg"
+      "image": "点位/A91.jpg",
+      "_d": "11.3"
     },
     {
       "position": [
@@ -970,7 +1060,8 @@
       ],
       "title": "92_点",
       "text": "",
-      "image": "点位/A92.jpg"
+      "image": "点位/A92.jpg",
+      "_d": "11.7"
     },
     {
       "position": [
@@ -980,7 +1071,8 @@
       ],
       "title": "93_点",
       "text": "",
-      "image": "点位/A93.jpg"
+      "image": "点位/A93.jpg",
+      "_d": "6.5"
     },
     {
       "position": [
@@ -990,7 +1082,8 @@
       ],
       "title": "94_点",
       "text": "",
-      "image": "点位/A94.jpg"
+      "image": "点位/A94.jpg",
+      "_d": "12.4"
     },
     {
       "position": [
@@ -1000,7 +1093,8 @@
       ],
       "title": "95_点",
       "text": "",
-      "image": "点位/A95.jpg"
+      "image": "点位/A95.jpg",
+      "_d": "13.4"
     },
     {
       "position": [
@@ -1010,7 +1104,8 @@
       ],
       "title": "96_点",
       "text": "",
-      "image": "点位/A96.jpg"
+      "image": "点位/A96.jpg",
+      "_d": "14.5"
     },
     {
       "position": [
@@ -1020,7 +1115,8 @@
       ],
       "title": "97_点",
       "text": "",
-      "image": "点位/A97.jpg"
+      "image": "点位/A97.jpg",
+      "_d": "13.7"
     },
     {
       "position": [
@@ -1030,7 +1126,8 @@
       ],
       "title": "98_点",
       "text": "",
-      "image": "点位/A98.jpg"
+      "image": "点位/A98.jpg",
+      "_d": "15.6"
     },
     {
       "position": [
@@ -1040,7 +1137,8 @@
       ],
       "title": "99_点",
       "text": "",
-      "image": "点位/A99.jpg"
+      "image": "点位/A99.jpg",
+      "_d": "22.4"
     },
     {
       "position": [
@@ -1050,7 +1148,8 @@
       ],
       "title": "100_点",
       "text": "",
-      "image": "点位/A100.jpg"
+      "image": "点位/A100.jpg",
+      "_d": "23.7"
     },
     {
       "position": [
@@ -1060,7 +1159,8 @@
       ],
       "title": "101_点",
       "text": "",
-      "image": "点位/A101.jpg"
+      "image": "点位/A101.jpg",
+      "_d": "13.2"
     },
     {
       "position": [
@@ -1070,7 +1170,8 @@
       ],
       "title": "102_点",
       "text": "",
-      "image": "点位/A102.jpg"
+      "image": "点位/A102.jpg",
+      "_d": "26.5"
     },
     {
       "position": [
@@ -1080,7 +1181,8 @@
       ],
       "title": "103_点",
       "text": "",
-      "image": "点位/A103.jpg"
+      "image": "点位/A103.jpg",
+      "_d": "24.0"
     },
     {
       "position": [
@@ -1090,7 +1192,8 @@
       ],
       "title": "104_点",
       "text": "",
-      "image": "点位/A104.jpg"
+      "image": "点位/A104.jpg",
+      "_d": "23.8"
     },
     {
       "position": [
@@ -1100,7 +1203,8 @@
       ],
       "title": "105_点",
       "text": "",
-      "image": "点位/A105.jpg"
+      "image": "点位/A105.jpg",
+      "_d": "22.4"
     },
     {
       "position": [
@@ -1110,7 +1214,8 @@
       ],
       "title": "106_点",
       "text": "",
-      "image": "点位/A106.jpg"
+      "image": "点位/A106.jpg",
+      "_d": "16.6"
     },
     {
       "position": [
@@ -1120,7 +1225,8 @@
       ],
       "title": "107_点",
       "text": "",
-      "image": "点位/A107.jpg"
+      "image": "点位/A107.jpg",
+      "_d": "17.2"
     },
     {
       "position": [
@@ -1130,7 +1236,8 @@
       ],
       "title": "108_点",
       "text": "",
-      "image": "点位/A108.jpg"
+      "image": "点位/A108.jpg",
+      "_d": "11.3"
     },
     {
       "position": [
@@ -1140,7 +1247,8 @@
       ],
       "title": "109_点",
       "text": "",
-      "image": "点位/A109.jpg"
+      "image": "点位/A109.jpg",
+      "_d": "11.9"
     },
     {
       "position": [
@@ -1150,7 +1258,8 @@
       ],
       "title": "110_点",
       "text": "",
-      "image": "点位/A110.jpg"
+      "image": "点位/A110.jpg",
+      "_d": "12.6"
     },
     {
       "position": [
@@ -1160,7 +1269,8 @@
       ],
       "title": "111_点",
       "text": "",
-      "image": "点位/A111.jpg"
+      "image": "点位/A111.jpg",
+      "_d": "13.6"
     },
     {
       "position": [
@@ -1170,7 +1280,8 @@
       ],
       "title": "112_点",
       "text": "",
-      "image": "点位/A112.jpg"
+      "image": "点位/A112.jpg",
+      "_d": "14.5"
     },
     {
       "position": [
@@ -1180,7 +1291,8 @@
       ],
       "title": "113_点",
       "text": "",
-      "image": "点位/A113.jpg"
+      "image": "点位/A113.jpg",
+      "_d": "19.1"
     },
     {
       "position": [
@@ -1190,7 +1302,8 @@
       ],
       "title": "114_点",
       "text": "",
-      "image": "点位/A114.jpg"
+      "image": "点位/A114.jpg",
+      "_d": "7.5"
     }
   ],
   "startMode": "default"
