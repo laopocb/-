@@ -88636,6 +88636,8 @@ class Viewer {
             window.__ssplatCameraManager = this.cameraManager;
             window.__ssplatApp = typeof app !== "undefined" ? app : null;
             window.__ssplatCameraEntity = global.camera || null;
+            // [本补丁] 暴露引擎场景类构造器，供功能模块（pano-layer 全景球）创建网格/材质/实体
+            window.__ssplatPano = { Mesh, MeshInstance, StandardMaterial, SphereGeometry, Entity, Color, Texture, CULLFACE_NONE, FILTER_LINEAR, FILTER_LINEAR_MIPMAP_LINEAR };
             const { gsplat } = app.scene;
             // quality budget
             const budgets = {
