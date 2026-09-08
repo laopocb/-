@@ -52,7 +52,7 @@ const VIEWER_FILES = ['index.html', 'index.js', 'index.css'];
 
 // 功能模块清单：一个功能 = 一个 JS 文件
 const MODULES = ['camlog', 'wall-layer', 'annotations-poster', 'camera-constraint'];
-const MODULE_VERSION = '44'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
+const MODULE_VERSION = '46'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
 
 // ---------- index.html 补丁 ----------
 const HTML_PATCHES = [
@@ -494,6 +494,14 @@ const JS_PATCHES = [
             '                        g.drawImage(im, (size - dw) / 2, (size - dh) / 2, dw, dh);',
             '                        const id = g.getImageData(0, 0, size, size);',
             '                        const d = id.data;',
+            '                        // [修复] 强制二元透明通道（用户要求，无渐变）：alpha<16 全透明(0)，其余拉满(255)；',
+'                        //       不透明像素保留原 RGB（金色）；透明像素 RGB 强制归零——即便混合通道失效，',
+'                        //       也配合材质 alphaTest 直接 discard，透明区绝不呈黑/白方块。',
+'                        for (let i = 0; i < d.length; i += 4) {',
+'                            const a = d[i + 3] < 16 ? 0 : 255;',
+'                            d[i + 3] = a;',
+'                            if (a === 0) { d[i] = 0; d[i + 1] = 0; d[i + 2] = 0; }',
+'                        }',
             '                        const t = new Texture(dv, { width: size, height: size, format: PIXELFORMAT_RGBA8, mipmaps: false, magFilter: FILTER_LINEAR, minFilter: FILTER_LINEAR, levels: [new Uint8Array(d.buffer)] });',
             '                        res(t);',
             '                    } catch (e) { console.warn(\'[marker] 纹理生成失败：\', url, e); res(null); }',
@@ -510,10 +518,20 @@ const JS_PATCHES = [
             '            });',
             '        }',
             '        this._applyMarkerTex = (tex) => {',
-            '            if (!tex || !this.materials) return;',
-            '            this.materials.forEach((m) => { m.emissiveMap = tex; m.opacityMap = tex; m.update(); });',
-            '            if (this.app) this.app.renderNextFrame = true;',
-            '        };',
+'            if (!tex || !this.materials) return;',
+'            this.materials.forEach((m) => {',
+'                m.emissiveMap = tex;',
+'                m.opacityMap = tex;',
+'                // [修复] 强制开启透明通道（用户要求）：显式 straight-alpha 混合',
+'                //   blendType=2(BLEND_NORMAL: src.a / 1-src.a)——纹理数据为非预乘 RGBA；',
+'                //   alphaTest=0.1 兜底：alpha<25 的像素直接 discard，即使 WebGPU 下混合',
+'                //   未生效，透明区（RGB=0）也绝不会作为黑/白方块上屏，只显示金色本体。',
+'                m.blendType = 2;',
+'                m.alphaTest = 0.1;',
+'                m.update();',
+'            });',
+'            if (this.app) this.app.renderNextFrame = true;',
+'        };',
             '        this._setMarkerActive = (active) => {',
             '            if (!this._markerKey) return;',
             '            this._markerActive = !!active;',
