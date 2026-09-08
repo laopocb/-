@@ -73,8 +73,11 @@
                 const tex = new gl.Texture(dv, {
                     width: W, height: H,
                     format: gl.PIXELFORMAT_RGBA8,
-                    mipmaps: true,
-                    minFilter: gl.FILTER_LINEAR_MIPMAP_LINEAR,
+                    // 不用 mipmaps：WebGPU 下仅传 levels[0] 时自动 mip 链可能生成失败，
+                    // 相机拉远（采样低级别 mip）会整片黑块/破面。关闭后恒定用全分辨率：
+                    // 2K 纹理映射球壁 1:1，无远距闪烁、无黑圆。
+                    mipmaps: false,
+                    minFilter: gl.FILTER_LINEAR,
                     magFilter: gl.FILTER_LINEAR,
                     levels: [new Uint8Array(id.data.buffer)]
                 });
