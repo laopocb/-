@@ -102,7 +102,14 @@
     const open = (index) => {
         const ann = annotations[index];
         if (!ann) return;
-        current = { index, ann };
+        // 记录打开瞬间的相机-点位水平距离：原地停留不关闭，走得更远才开始计 2s 关闭
+        let openDist = 0;
+        const cam = window.__ssplatCameraEntity;
+        if (cam && ann.position) {
+            const p = cam.getPosition();
+            openDist = Math.hypot(p.x - ann.position[0], p.z - ann.position[2]);
+        }
+        current = { index, ann, openDist };
         resetZoom();
         posterImg.src = imageUrl(ann.image) || '';
         poster.style.display = 'block';
@@ -138,7 +145,9 @@
         const a = current.ann.position;
         // 水平距离判断（忽略 y 高差，避免高台点位误判/漏判）
         const dist = Math.hypot(p.x - a[0], p.z - a[2]);
-        if (dist > rangeFor(current.index)) {
+        // 关闭阈值：点位最近邻自适应 与 打开瞬间距离+2m 取大者 —— 原地看图不关，转移相机才开始计 2s
+        const t = Math.max(rangeFor(current.index), (current.openDist || 0) + 2);
+        if (dist > t) {
             if (outSince === null) outSince = performance.now();
             if (performance.now() - outSince >= CLOSE_DELAY_MS) {
                 close();
