@@ -17,3 +17,5 @@ NVIDIA Corporation/
 *.log
 _ref_zip/
 trae-marker/
+_ghdev.*
+_ghlogin.*
