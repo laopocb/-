@@ -52,7 +52,7 @@ const VIEWER_FILES = ['index.html', 'index.js', 'index.css'];
 
 // 功能模块清单：一个功能 = 一个 JS 文件
 const MODULES = ['camlog', 'wall-layer', 'annotations-poster', 'camera-constraint'];
-const MODULE_VERSION = '46'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
+const MODULE_VERSION = '47'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
 
 // ---------- index.html 补丁 ----------
 const HTML_PATCHES = [
@@ -526,8 +526,10 @@ const JS_PATCHES = [
 '                //   blendType=2(BLEND_NORMAL: src.a / 1-src.a)——纹理数据为非预乘 RGBA；',
 '                //   alphaTest=0.1 兜底：alpha<25 的像素直接 discard，即使 WebGPU 下混合',
 '                //   未生效，透明区（RGB=0）也绝不会作为黑/白方块上屏，只显示金色本体。',
+'                //   opacity=0.5：标注图标整体 50% 半透明（用户要求）。',
 '                m.blendType = 2;',
 '                m.alphaTest = 0.1;',
+'                m.opacity = 0.5;',
 '                m.update();',
 '            });',
 '            if (this.app) this.app.renderNextFrame = true;',

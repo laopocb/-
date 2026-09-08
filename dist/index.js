@@ -82318,8 +82318,10 @@ class Annotation extends Script {
                 //   blendType=2(BLEND_NORMAL: src.a / 1-src.a)——纹理数据为非预乘 RGBA；
                 //   alphaTest=0.1 兜底：alpha<25 的像素直接 discard，即使 WebGPU 下混合
                 //   未生效，透明区（RGB=0）也绝不会作为黑/白方块上屏，只显示金色本体。
+                //   opacity=0.5：标注图标整体 50% 半透明（用户要求）。
                 m.blendType = 2;
                 m.alphaTest = 0.1;
+                m.opacity = 0.5;
                 m.update();
             });
             if (this.app) this.app.renderNextFrame = true;
