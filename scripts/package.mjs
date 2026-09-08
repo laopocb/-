@@ -16,8 +16,7 @@ const IMG = join(ROOT, 'img');
 const DATA_FILES = [
     'wd.compressed.ply',
     '1.obj',
-    '1.collision.glb',
-    '点位/A1.jpg', '点位/A2.jpg', '点位/A3.jpg'
+    '1.collision.glb'
 ];
 const IMG_ALL = ['.jpg', '.png', '.jpeg', '.webp'];
 
@@ -50,8 +49,16 @@ const main = async () => {
     }
     console.log(`  [dist] 已复制`);
 
-    // 2) data（ply/obj/碰撞体/点位图）
+    // 2) data（ply/obj/碰撞体/点位图：点位目录整目录打包，含全部新增图）
     total += await copyTree(DATA, DATA_FILES, 'data');
+    const POINTS_SRC = join(DATA, '点位');
+    if (existsSync(POINTS_SRC)) {
+        await cp(POINTS_SRC, join(OUT, 'data', '点位'), { recursive: true });
+        const pts = await readdir(POINTS_SRC);
+        const sz = await dirSize(POINTS_SRC);
+        total += sz;
+        console.log(`  [data] 点位图片已整目录打包 × ${pts.length}（共 ${fmt(sz)}）`);
+    }
 
     // 3) img（封面/莲花/光环/全部标记图）
     const imgExt = ['.jpg', '.jpeg', '.png', '.webp'];
