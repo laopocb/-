@@ -47,8 +47,8 @@
     Object.assign(poster.style, {
         position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
         display: 'none', zIndex: '2000',
-        // 尺寸为过往版本的 50%
-        maxWidth: 'min(430px, 47vw)', maxHeight: '45vh',
+        // 尺寸为过往版本的 50%（图片放大 20%：容器/图片同比 +20%）
+        maxWidth: 'min(516px, 56vw)', maxHeight: '54vh',
         background: 'rgba(18, 22, 30, 0.6)',
         backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)',
         borderRadius: '28px', overflow: 'hidden',
