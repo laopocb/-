@@ -58,13 +58,14 @@
         try {
             const p = cam.getPosition();
 
-            // 1) 高度写死：向下探测空气墙结构面，相机 y = 结构面 + 1.5（随结构升高）
-            //    平滑收敛（避免上楼梯/过坎时相机瞬跳，进而诱发镜头抖动）。
+            // 1) 高度写死：向下探测空气墙结构面，相机 y = 结构面 + 1.5（随结构升高）。
+            //    直接写死到位（K=1.0）：官方相机控制器每帧可能覆写高度，平滑 0.35 永远拉不回去，
+            //    实测二楼/平台处眼高只剩 0.8m（贴地）。
             const down = col.queryRay(p.x, p.y, p.z, 0, -1, 0, DROP_RAY);
             if (down && typeof down.y === 'number') {
                 const targetY = down.y + EYE_HEIGHT;
                 if (Math.abs(p.y - targetY) > 0.005) {
-                    cam.setPosition(p.x, p.y + (targetY - p.y) * 0.35, p.z);
+                    cam.setPosition(p.x, targetY, p.z);
                 }
             }
 
@@ -73,8 +74,14 @@
         } catch (err) { /* 单帧约束失败忽略 */ }
     };
 
-    // rAF 主循环（不依赖 app.on，确保每帧执行；与渲染色同步）
+    // 双保险循环：rAF 主循环 + 引擎 update 钩子（任一触发都校正，幂等）
     const rafLoop = () => { requestAnimationFrame(() => { onTick(); rafLoop(); }); };
-    waitReady().then((ok) => { if (ok) rafLoop(); });
+    waitReady().then((ok) => {
+        if (!ok) return;
+        rafLoop();
+        if (app && typeof app.on === 'function') {
+            try { app.on('update', onTick); } catch (e) { /* 忽略 */ }
+        }
+    });
     window.__ssplatCamConstraint = true;
 })();
