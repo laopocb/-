@@ -74,14 +74,14 @@ const HTML_PATCHES = [
         ].join('\n')
     },
     {
-        name: 'index.html-页面标题改为「高斯查看器」',
+        name: 'index.html-页面标题改为「融·云冈艺术高校巡展武汉大学站」',
         target: '<title>SuperSplat Viewer</title>',
-        replacement: '<title>高斯查看器</title>'
+        replacement: '<title>融·云冈艺术高校巡展武汉大学站</title>'
     },
     {
-        name: 'index.html-品牌区文案改为「高斯查看器」',
+        name: 'index.html-品牌区文案改为「融·云冈艺术高校巡展武汉大学站」',
         target: '<span class="title-name">SuperSplat Viewer</span>',
-        replacement: '<span class="title-name">高斯查看器</span>'
+        replacement: '<span class="title-name">融·云冈艺术高校巡展武汉大学站</span>'
     },
     {
         name: 'index.html-移除顶部注解导航条（Annotation Navigator）',
