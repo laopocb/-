@@ -76,6 +76,10 @@
     styleSheet.textContent = `
         @keyframes poster-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(.92); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         #annotations-poster img.poster-img { width: calc(100vw - 10px) !important; max-width: calc(100vw - 10px) !important; height: auto !important; max-height: 92vh !important; object-fit: contain; display: block; background: #000; }
+        #annotations-poster img.poster-img.zoom-2x { transform: scale(2); transform-origin: center center; }
+        /* 放大镜按钮：图片正下方，居中 */
+        #annotations-poster .poster-zoom { display: block; margin: 10px auto 8px; width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.14); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        #annotations-poster .poster-zoom.active { background: rgba(255,214,90,.35); box-shadow: 0 0 10px rgba(255,214,90,.5); }
         /* 永久隐藏官方注解的小黑气泡（title+text 文字说明已移除，官方每帧会强制显示，故用 !important 压制） */
         #ui .pc-annotation { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
     `;
@@ -84,9 +88,13 @@
     poster.innerHTML = `
         <button class="poster-close" style="position:absolute;right:14px;top:12px;z-index:3;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;font-size:18px;line-height:1;cursor:pointer;">×</button>
         <img class="poster-img" src="" alt="" style="pointer-events:none;">
+        <button class="poster-zoom" type="button" title="放大镜：图片放大 2 倍">🔍</button>
     `;
     document.body.appendChild(poster);
     const closeBtn = poster.querySelector('.poster-close');
+    const zoomBtn = poster.querySelector('.poster-zoom');
+    const posterImg = poster.querySelector('.poster-img');
+    const resetZoom = () => { posterImg.classList.remove('zoom-2x'); zoomBtn.classList.remove('active'); };
 
     // ---------- 打开 / 关闭 ----------
     let current = null; // { index, ann } 当前打开的注解
@@ -95,12 +103,14 @@
         const ann = annotations[index];
         if (!ann) return;
         current = { index, ann };
-        poster.querySelector('.poster-img').src = imageUrl(ann.image) || '';
+        resetZoom();
+        posterImg.src = imageUrl(ann.image) || '';
         poster.style.display = 'block';
         startWatcher();
     };
     const close = () => {
         if (!current) return;
+        resetZoom();
         poster.style.display = 'none';
         current = null;
         stopWatcher();
@@ -109,6 +119,13 @@
             try { window.__ssplatMarker.deactivate(); } catch (e) { /* 忽略 */ }
         }
     };
+
+    // 放大镜：图片正下方按钮，点击放大 2 倍（可超屏），再点恢复
+    zoomBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const on = posterImg.classList.toggle('zoom-2x');
+        zoomBtn.classList.toggle('active', on);
+    });
 
     // ---------- 相机超距监视：连续超阈值 2s 自动关闭 ----------
     let rafId = null;
