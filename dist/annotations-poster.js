@@ -76,7 +76,6 @@
     styleSheet.textContent = `
         @keyframes poster-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(.92); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         #annotations-poster img.poster-img { width: calc(100vw - 10px) !important; max-width: calc(100vw - 10px) !important; height: auto !important; max-height: 92vh !important; object-fit: contain; display: block; background: #000; }
-        #annotations-poster img.poster-img.zoom-2x { transform: scale(2); transform-origin: center center; }
         /* 放大镜按钮：图片正下方，居中 */
         #annotations-poster .poster-zoom { display: block; margin: 10px auto 8px; width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.14); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         #annotations-poster .poster-zoom.active { background: rgba(255,214,90,.35); box-shadow: 0 0 10px rgba(255,214,90,.5); }
@@ -94,7 +93,52 @@
     const closeBtn = poster.querySelector('.poster-close');
     const zoomBtn = poster.querySelector('.poster-zoom');
     const posterImg = poster.querySelector('.poster-img');
-    const resetZoom = () => { posterImg.classList.remove('zoom-2x'); zoomBtn.classList.remove('active'); };
+    // 放大/拖拽状态
+    let zoomed = false;          // 是否放大状态
+    let zoomTX = 0;              // 拖拽水平位移（translateX，不占布局=位置写死）
+    let lastOperate = 0;         // 最后一次交互时间（放大状态 2s 无操作自动关闭）
+    let drag = null;             // 拖动会话 { startX, baseTX }
+
+    const applyImgTransform = () => {
+        posterImg.style.transform = zoomed ? `translateX(${zoomTX}px) scale(2)` : '';
+    };
+    const setZoom = (on) => {
+        zoomed = !!on;
+        zoomTX = 0;
+        drag = null;
+        if (zoomed) {
+            lastOperate = performance.now();
+            posterImg.style.pointerEvents = 'auto';
+            posterImg.style.touchAction = 'none';
+        } else {
+            posterImg.style.pointerEvents = '';
+            posterImg.style.touchAction = '';
+        }
+        zoomBtn.classList.toggle('active', zoomed);
+        applyImgTransform();
+    };
+    const resetZoom = () => setZoom(false);
+
+    // 手机端放大后左右拖拽平移（transform 平移，位置写死不回流）
+    posterImg.addEventListener('touchstart', (e) => {
+        if (!zoomed) return;
+        lastOperate = performance.now();
+        const t = e.touches[0];
+        drag = { startX: t.clientX, baseTX: zoomTX };
+        e.preventDefault();
+    }, { passive: false });
+    posterImg.addEventListener('touchmove', (e) => {
+        if (!zoomed || !drag) return;
+        lastOperate = performance.now();
+        const t = e.touches[0];
+        const dx = t.clientX - drag.startX;
+        const half = posterImg.getBoundingClientRect().width / 4; // 放大部分可平移范围
+        zoomTX = Math.max(-half, Math.min(half, drag.baseTX + dx));
+        applyImgTransform();
+        e.preventDefault();
+    }, { passive: false });
+    posterImg.addEventListener('touchend', () => { drag = null; }, { passive: true });
+    posterImg.addEventListener('touchcancel', () => { drag = null; }, { passive: true });
 
     // ---------- 打开 / 关闭 ----------
     let current = null; // { index, ann } 当前打开的注解
@@ -130,8 +174,7 @@
     // 放大镜：图片正下方按钮，点击放大 2 倍（可超屏），再点恢复
     zoomBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const on = posterImg.classList.toggle('zoom-2x');
-        zoomBtn.classList.toggle('active', on);
+        setZoom(!zoomed);
     });
 
     // ---------- 相机超距监视：连续超阈值 2s 自动关闭 ----------
@@ -141,6 +184,11 @@
     const tickWatch = () => {
         const cam = window.__ssplatCameraEntity;
         if (!cam || !current) { rafId = requestAnimationFrame(tickWatch); return; }
+        // 放大状态：2s 无任何操作（最后一次触摸/放大激活）→ 自动关闭
+        if (zoomed && (performance.now() - lastOperate) >= CLOSE_DELAY_MS) {
+            close();
+            return;
+        }
         const p = cam.getPosition();
         const a = current.ann.position;
         // 水平距离判断（忽略 y 高差，避免高台点位误判/漏判）
