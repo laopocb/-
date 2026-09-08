@@ -52,7 +52,7 @@ const VIEWER_FILES = ['index.html', 'index.js', 'index.css'];
 
 // 功能模块清单：一个功能 = 一个 JS 文件
 const MODULES = ['camlog', 'wall-layer', 'annotations-poster', 'camera-constraint'];
-const MODULE_VERSION = '47'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
+const MODULE_VERSION = '48'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
 
 // ---------- index.html 补丁 ----------
 const HTML_PATCHES = [
@@ -524,11 +524,11 @@ const JS_PATCHES = [
 '                m.opacityMap = tex;',
 '                // [修复] 强制开启透明通道（用户要求）：显式 straight-alpha 混合',
 '                //   blendType=2(BLEND_NORMAL: src.a / 1-src.a)——纹理数据为非预乘 RGBA；',
-'                //   alphaTest=0.1 兜底：alpha<25 的像素直接 discard，即使 WebGPU 下混合',
-'                //   未生效，透明区（RGB=0）也绝不会作为黑/白方块上屏，只显示金色本体。',
+'                //   alphaTest=0.5 兜底：alpha<128 的像素直接 discard，即使 WebGPU 下混合',
+'                //   未生效或半透边缘混色，透明区（RGB=0）与渐变边缘也绝不上屏，只显示金色本体。',
 '                //   opacity=0.5：标注图标整体 50% 半透明（用户要求）。',
 '                m.blendType = 2;',
-'                m.alphaTest = 0.1;',
+'                m.alphaTest = 0.5;',
 '                m.opacity = 0.5;',
 '                m.update();',
 '            });',
@@ -587,6 +587,28 @@ const JS_PATCHES = [
         ].join('\n')
     },
         {
+        name: 'index.js-标注 DOM 样式补强：热区/说明气泡显式透明 + 层级（标签透明兜底）',
+        target: '        Annotation.styleSheet = style;\n    }',
+        replacement: [
+            '        Annotation.styleSheet = style;',
+            '        // [本补丁] 标注标签透明补强（困挠已久的黑/白方块问题最后兜底层）：',
+            '        //   1) 点击热区(.pc-annotation-hotspot)：显式 background: transparent !important，',
+            '        //      阻断任何父级/内联默认底色，30px 热区纯透明只做点击；',
+            '        //   2) 说明气泡(.pc-annotation)：官方 rgba(0,0,0,0.8) 在浅背景下呈黑块，',
+            '        //      降为 rgba(0,0,0,0.35) 半透明深底，文字白字+阴影保持可读；',
+            '        //   3) 层级/交互：气泡 z-index 高于热区但 pointer-events:none 不挡点击，',
+            '        //      热区 pointer-events:auto 保持可点。',
+            '        const _annExtraStyle = document.createElement(\'style\');',
+            '        _annExtraStyle.textContent = [',
+            '            \'.pc-annotation-hotspot { background: transparent !important; pointer-events: auto !important; }\',',
+            '            \'.pc-annotation { background: rgba(0, 0, 0, 0.35) !important; border: none !important; box-shadow: none !important; }\',',
+            '            \'.pc-annotation-title, .pc-annotation-text { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); }\'',
+            '        ].join(\'\\n\\n\');',
+            '        document.head.appendChild(_annExtraStyle);',
+            '    }'
+        ].join('\n')
+    },
+    {
         name: 'index.js-吞掉 requestPointerLock 的 promise reject（PointerLockManager.canvas 路径）',
         target: '            this._canvas?.requestPointerLock();',
         replacement: [
