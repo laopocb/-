@@ -47,11 +47,11 @@
     Object.assign(poster.style, {
         position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
         display: 'none', zIndex: '2000',
-        // 尺寸为过往版本的 50%（图片放大 20%：容器/图片同比 +20%）
-        maxWidth: 'min(516px, 56vw)', maxHeight: '54vh',
+        // 强制放大 200% + 穿屏：容器随图片自适应，溢出可见
+        maxWidth: 'min(880px, 94vw)', maxHeight: '88vh', width: 'fit-content',
         background: 'rgba(18, 22, 30, 0.6)',
         backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)',
-        borderRadius: '28px', overflow: 'hidden',
+        borderRadius: '28px', overflow: 'visible',
         boxShadow: '0 30px 90px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.10)',
         fontFamily: '"PingFang SC","Microsoft YaHei",system-ui,sans-serif',
         color: '#f2f5f8', animation: 'poster-pop .28s cubic-bezier(.2,.9,.3,1.2)'
@@ -60,7 +60,7 @@
     const styleSheet = document.createElement('style');
     styleSheet.textContent = `
         @keyframes poster-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(.92); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
-        #annotations-poster img.poster-img { width: auto !important; height: auto !important; max-width: 100% !important; max-height: 74vh !important; object-fit: contain; display: block; background: #000; }
+        #annotations-poster img.poster-img { width: auto !important; height: auto !important; max-width: 100% !important; max-height: 74vh !important; object-fit: contain; display: block; background: #000; transform: scale(2); transform-origin: center center; }
         /* 永久隐藏官方注解的小黑气泡（title+text 文字说明已移除，官方每帧会强制显示，故用 !important 压制） */
         #ui .pc-annotation { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
     `;
