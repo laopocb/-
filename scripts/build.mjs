@@ -52,7 +52,7 @@ const VIEWER_FILES = ['index.html', 'index.js', 'index.css'];
 
 // 功能模块清单：一个功能 = 一个 JS 文件
 const MODULES = ['camlog', 'wall-layer', 'annotations-poster', 'camera-constraint'];
-const MODULE_VERSION = '49'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
+const MODULE_VERSION = '50'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
 
 // ---------- index.html 补丁 ----------
 const HTML_PATCHES = [
@@ -626,12 +626,13 @@ const JS_PATCHES = [
         ].join('\n')
     },
     {
-        name: 'index.js-移动端默认开启游戏控制（方向摇杆）：touch 设备且未手动设置时 gamingControls=true',
+        name: 'index.js-游戏控制强制直接打开（用户要求，苹果端/移动端落地即用）',
         target: '        gamingControls: localStorage.getItem(\'gamingControls\') === \'true\'',
         replacement: [
-            '        // [本补丁] 手机端默认开启游戏控制（方向摇杆）：touch 设备且用户从未手动设置时默认 true，',
-            '        //          落地即用 move.png D-pad 方向控制；已手动设置过则遵循用户选择（桌面键盘不受影响）。',
-            '        gamingControls: (localStorage.getItem(\'gamingControls\') === null && (\'ontouchstart\' in window || navigator.maxTouchPoints > 0)) || localStorage.getItem(\'gamingControls\') === \'true\''
+            '        // [本补丁] 游戏控制强制直接打开（用户要求）：无条件 gamingControls=true，',
+            '        //          苹果端/移动端进入即显示 move.png 方向摇杆，不再依赖设备/存储判断；',
+            '        //          仍可用 G 键或设置面板手动关闭。',
+            '        gamingControls: true'
         ].join('\n')
     }
 ];

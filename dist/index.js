@@ -89948,9 +89948,10 @@ const main = async (canvas, settingsJson, config) => {
         isFullscreen: false,
         controlsHidden: false,
         showAnnotations: localStorage.getItem('showAnnotations') !== 'false',
-        // [本补丁] 手机端默认开启游戏控制（方向摇杆）：touch 设备且用户从未手动设置时默认 true，
-        //          落地即用 move.png D-pad 方向控制；已手动设置过则遵循用户选择（桌面键盘不受影响）。
-        gamingControls: (localStorage.getItem('gamingControls') === null && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) || localStorage.getItem('gamingControls') === 'true'
+        // [本补丁] 游戏控制强制直接打开（用户要求）：无条件 gamingControls=true，
+        //          苹果端/移动端进入即显示 move.png 方向摇杆，不再依赖设备/存储判断；
+        //          仍可用 G 键或设置面板手动关闭。
+        gamingControls: true
     });
     const global = {
         app,
