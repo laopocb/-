@@ -82262,8 +82262,8 @@ class Annotation extends Script {
         Annotation._initializeStatic(this.app);
         // Create texture
         this.texture = Annotation._createHotspotTexture(this.app, this.label);
-        // [本补丁] 所有标注统一使用用户提供的发光图 img/热点标记.png（1.62x，无呼吸）：
-        //          选中(annotation.activate)切换为 img/热点标记-激活.png，取消(deactivate)恢复。
+        // [本补丁] 所有标注统一使用 img/热点标记-激活.png（1.62x，无呼吸，用户指定试用此图）：
+        //          选中/取消切换保持同一张图（后续如需区分再改回 base/激活 双图）。
         //          异步加载，失败回退官方圆点。像素大小按光效实际像素等比换算与官方标记一致。
         this._markerKey = this.label;
         this._markerActive = false;
@@ -82276,7 +82276,7 @@ class Annotation extends Script {
                 t.setSource(bmp);
                 return t;
             }).catch((e) => { console.warn('[marker] 图片加载失败：', url, e); return null; });
-            const baseUrl = './img/热点标记.png';
+            const baseUrl = './img/热点标记-激活.png';
             Promise.all([mkTex(baseUrl), mkTex('./img/热点标记-激活.png')]).then((ts) => {
                 if (!this.materials || !this.materials.length || !ts[0]) return;
                 this._markerTex.base = ts[0];
