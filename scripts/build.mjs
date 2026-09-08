@@ -142,7 +142,7 @@ html,body{margin:0;padding:0;width:100%;height:100%}
 @media(min-width:640px){.g-h1{font-size:36px}}
 .g-prog{margin-top:40px;width:min(86vw,420px);animation:text-fade-in 1.2s ease-out .2s both}
 .g-prog-head{margin-bottom:10px;display:flex;align-items:baseline;justify-content:space-between;color:#e7c896}
-.g-stage{font-size:14px;letter-spacing:.25em}
+.g-stage{font-size:12px;letter-spacing:.12em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .g-pct{font-size:16px;font-weight:500;color:#fbe6c2;font-family:'Cormorant Garamond',serif;font-variant-numeric:tabular-nums}
 .g-track{position:relative;height:4px;border-radius:999px;background:rgba(231,200,150,0.12);box-shadow:inset 0 0 0 1px rgba(231,200,150,0.15)}
 .g-bloom{position:absolute;top:-6px;bottom:-6px;left:0;width:0;border-radius:999px;background:linear-gradient(90deg, transparent, rgba(255,196,110,0.35));filter:blur(9px)}
@@ -216,7 +216,7 @@ html,body{margin:0;padding:0;width:100%;height:100%}
       return pr;
     };
   })();
-  var STAGES = ['正在唤醒石窟造像', '构建三维场景', '加载高精度纹理', '点亮千年佛光', '即将步入展厅'];
+  var STAGES = ['融·云冈艺术高校巡展武汉大学站'];
   var box = L.querySelector('.g-motes');
   var frag = document.createDocumentFragment();
   for (var i = 0; i < 44; i++) {
