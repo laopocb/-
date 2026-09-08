@@ -47,8 +47,8 @@
     Object.assign(poster.style, {
         position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
         display: 'none', zIndex: '2000',
-        // 强制放大 200% + 穿屏：容器随图片自适应，溢出可见
-        maxWidth: 'min(880px, 94vw)', maxHeight: '88vh', width: 'fit-content',
+        // 强制放大 + 宽屏内（距左右 5px）：容器随图片自适应，溢出可见
+        maxWidth: 'calc(100vw - 10px)', maxHeight: '94vh', width: 'fit-content',
         background: 'rgba(18, 22, 30, 0.6)',
         backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)',
         borderRadius: '28px', overflow: 'visible',
@@ -60,7 +60,7 @@
     const styleSheet = document.createElement('style');
     styleSheet.textContent = `
         @keyframes poster-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(.92); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
-        #annotations-poster img.poster-img { width: auto !important; height: auto !important; max-width: 100% !important; max-height: 74vh !important; object-fit: contain; display: block; background: #000; transform: scale(2); transform-origin: center center; }
+        #annotations-poster img.poster-img { width: calc(100vw - 10px) !important; max-width: calc(100vw - 10px) !important; height: auto !important; max-height: 92vh !important; object-fit: contain; display: block; background: #000; }
         /* 永久隐藏官方注解的小黑气泡（title+text 文字说明已移除，官方每帧会强制显示，故用 !important 压制） */
         #ui .pc-annotation { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
     `;
