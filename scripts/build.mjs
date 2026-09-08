@@ -52,7 +52,7 @@ const VIEWER_FILES = ['index.html', 'index.js', 'index.css'];
 
 // 功能模块清单：一个功能 = 一个 JS 文件
 const MODULES = ['camlog', 'wall-layer', 'annotations-poster', 'camera-constraint'];
-const MODULE_VERSION = '43'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
+const MODULE_VERSION = '44'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
 
 // ---------- index.html 补丁 ----------
 const HTML_PATCHES = [
@@ -480,8 +480,8 @@ const JS_PATCHES = [
             '        if (this._markerKey) {',
             '            const dv = this.app.graphicsDevice;',
             '            // [修复] alpha 透明通道：createImageBitmap+setSource 在 WebGPU 下 alpha 未正确上传 → 透明区显示黑。',
-            '            //       改用官方已验证的渲染路径：Image→canvas(2次幂)→getImageData(逐像素RGBA)→levels 上传；',
-            '            //       与官方 _createHotspotTexture 完全一致（官方半透明描边渲染正常即证明该路径 alpha 正确）。',
+            '        //       改用官方已验证的渲染路径：Image→canvas(2次幂)→getImageData(逐像素RGBA)→levels 上传；',
+            '        //       注意：不再“白化半透像素”（官方数字圆点才需要），发光图保留原RGB，金色渐变+alpha 原样上屏。',
             '            const mkTex = (url) => new Promise((res) => {',
             '                const im = new Image();',
             '                im.onload = () => {',
@@ -494,7 +494,6 @@ const JS_PATCHES = [
             '                        g.drawImage(im, (size - dw) / 2, (size - dh) / 2, dw, dh);',
             '                        const id = g.getImageData(0, 0, size, size);',
             '                        const d = id.data;',
-            '                        for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 255) { d[i] = 255; d[i + 1] = 255; d[i + 2] = 255; } }',
             '                        const t = new Texture(dv, { width: size, height: size, format: PIXELFORMAT_RGBA8, mipmaps: false, magFilter: FILTER_LINEAR, minFilter: FILTER_LINEAR, levels: [new Uint8Array(d.buffer)] });',
             '                        res(t);',
             '                    } catch (e) { console.warn(\'[marker] 纹理生成失败：\', url, e); res(null); }',
