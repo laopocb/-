@@ -60,7 +60,7 @@
     const styleSheet = document.createElement('style');
     styleSheet.textContent = `
         @keyframes poster-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(.92); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
-        #annotations-poster img.poster-img { width: 100%; max-height: 31vh; object-fit: contain; display: block; background: #000; }
+        #annotations-poster img.poster-img { width: 100%; max-height: 37vh; object-fit: contain; display: block; background: #000; }
         /* 永久隐藏官方注解的小黑气泡（title+text 文字说明已移除，官方每帧会强制显示，故用 !important 压制） */
         #ui .pc-annotation { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
     `;
