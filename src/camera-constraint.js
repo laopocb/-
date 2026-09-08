@@ -70,9 +70,13 @@
             }
             if (Number.isFinite(best)) {
                 let target = best + EYE_HEIGHT;
-                // 高度钳制：单帧最多下降 0.5m（下台阶平滑），防止行走控制器把相机逐帧压低
-                if (lastTargetY !== null && target < lastTargetY - 0.5) {
-                    target = lastTargetY - 0.5;
+                // 高度钳制：单帧最多下降 0.5m（下台阶平滑）；单帧最多上升 0.35m（上楼梯逐级爬升，
+                // 避免“取最高落脚面”在楼道处瞬间抬到上一层平台，真机上看着像高了 2m+）。
+                if (lastTargetY !== null) {
+                    const minT = lastTargetY - 0.5;
+                    const maxT = lastTargetY + 0.35;
+                    if (target < minT) target = minT;
+                    else if (target > maxT) target = maxT;
                 }
                 lastTargetY = target;
                 if (Math.abs(p.y - target) > 0.005) {
