@@ -13,12 +13,27 @@
  * 依赖：window.__ssplatCameraEntity（相机实体）、window.__ssplatCollision（空气墙碰撞体）、
  *       window.__ssplatMode（相机模式）、window.__ssplatFreeFly。
  */
-(async () => {
+(() => {
     const EYE_HEIGHT = 1.5; // 眼高（米），强制
     const PITCH_MAX = 20;   // 俯仰限制（度）
-    const DROP_RAY = 8;     // 向下探测最大距离（米）
+    const DROP_RAY = 30;    // 向下探测最大距离（米）——原 8m 在落差大/平台处打空导致高度失效
 
-    // 等引擎暴露（Entity/App/Collision）就绪
+    const clampPitch = (cam) => {
+        const q = cam.getRotation();
+        const fy = 2 * (q.x * q.w - q.y * q.z);
+        const pitchDeg = (Math.asin(Math.max(-1, Math.min(1, fy))) * 180) / Math.PI;
+        if (pitchDeg > PITCH_MAX || pitchDeg < -PITCH_MAX) {
+            const excess = (pitchDeg > PITCH_MAX ? pitchDeg - PITCH_MAX : pitchDeg + PITCH_MAX) * Math.PI / 180;
+            const s = Math.sin(-excess / 2), c = Math.cos(-excess / 2);
+            const wx = q.w * c - q.x * s;
+            const xx = q.w * s + q.x * c;
+            const yx = q.y * c + q.z * s;
+            const zx = q.z * c - q.y * s;
+            cam.setRotation(xx, yx, zx, wx);
+        }
+    };
+
+    // 等引擎暴露就绪
     let cam = null, app = null;
     const waitReady = async () => {
         for (let i = 0; i < 300; i++) {
@@ -31,7 +46,6 @@
         }
         return false;
     };
-    if (!(await waitReady())) return;
 
     const onTick = () => {
         // 模式过滤：仅 fly / walk；?free=1 自由飞行豁免
@@ -47,7 +61,7 @@
             // 1) 高度写死：向下探测空气墙结构面，相机 y = 结构面 + 1.5（随结构升高）
             //    平滑收敛（避免上楼梯/过坎时相机瞬跳，进而诱发镜头抖动）。
             const down = col.queryRay(p.x, p.y, p.z, 0, -1, 0, DROP_RAY);
-            if (down) {
+            if (down && typeof down.y === 'number') {
                 const targetY = down.y + EYE_HEIGHT;
                 if (Math.abs(p.y - targetY) > 0.005) {
                     cam.setPosition(p.x, p.y + (targetY - p.y) * 0.35, p.z);
@@ -55,31 +69,12 @@
             }
 
             // 2) 俯仰写死：水平 360°，上下 ±20°
-            //    只沿“相机自身 X 轴（横滚轴）”做增量修正：由 fwd 求 pitch，
-            //    超出 ±20° 时把超限角度折算成绕本地 X 轴的微小旋转右乘回去——
-            //    仅改变俯仰，yaw/roll 原样保留，镜头方向不会被强制拧转。
-            const q = cam.getRotation();
-            const fy = 2 * (q.x * q.w - q.y * q.z);
-            const pitchDeg = (Math.asin(Math.max(-1, Math.min(1, fy))) * 180) / Math.PI;
-            if (pitchDeg > PITCH_MAX || pitchDeg < -PITCH_MAX) {
-                const excess = (pitchDeg > PITCH_MAX ? pitchDeg - PITCH_MAX : pitchDeg + PITCH_MAX) * Math.PI / 180;
-                const s = Math.sin(-excess / 2), c = Math.cos(-excess / 2);
-                // q' = q * qx(-excess)
-                const wx = q.w * c - q.x * s;
-                const xx = q.w * s + q.x * c;
-                const yx = q.y * c + q.z * s;
-                const zx = q.z * c - q.y * s;
-                cam.setRotation(xx, yx, zx, wx);
-            }
+            clampPitch(cam);
         } catch (err) { /* 单帧约束失败忽略 */ }
     };
 
-    // 挂在引擎 update 之后（相机动完再纠正，避免与移动器打架）
-    if (app && typeof app.on === 'function') {
-        app.on('update', onTick);
-    } else {
-        const raf = () => { requestAnimationFrame(() => { onTick(); raf(); }); };
-        raf();
-    }
+    // rAF 主循环（不依赖 app.on，确保每帧执行；与渲染色同步）
+    const rafLoop = () => { requestAnimationFrame(() => { onTick(); rafLoop(); }); };
+    waitReady().then((ok) => { if (ok) rafLoop(); });
     window.__ssplatCamConstraint = true;
 })();
