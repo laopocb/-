@@ -1,0 +1,19 @@
+{
+  "name": "wlbwg-gaussian-viewer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "本地 3D 高斯查看器：基于官方 SuperSplat Viewer，加载 data/point_wlbwg.compressed.ply",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "serve": "node scripts/serve.mjs",
+    "start": "node scripts/build.mjs && node scripts/serve.mjs"
+  },
+  "dependencies": {
+    "@playcanvas/supersplat-viewer": "1.28.0",
+    "three": "^0.185.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

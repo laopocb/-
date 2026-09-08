@@ -1,0 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
+@import 'tailwindcss';
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #060402;
+}
+
+/* ---- Lotus breathing float ---- */
+@keyframes lotus-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-14px) scale(1.015);
+  }
+}
+
+@keyframes lotus-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
+}
+
+/* ---- Orbital rings ---- */
+@keyframes spin-cw {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-ccw {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* ---- Floating light motes (depth-of-field bokeh) ---- */
+@keyframes mote-rise {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-58vh) translateX(var(--p-drift, 30px));
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-118vh) translateX(0);
+    opacity: 0;
+  }
+}
+
+/* inner twinkle multiplies against the wrapper's edge fade */
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: var(--p-min, 0.35);
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: var(--p-opacity, 0.9);
+    transform: scale(1);
+  }
+}
+
+/* ---- Progress shimmer ---- */
+@keyframes bar-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@keyframes text-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hide scrollbars — this is a full-bleed loading screen */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

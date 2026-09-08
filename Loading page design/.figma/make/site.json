@@ -1,0 +1,10 @@
+{
+  "description": "Creates immersive 3D cultural exhibition loading pages featuring animated progress bars and floating lotus particle effects for enhanced visual appeal.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

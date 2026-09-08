@@ -1,0 +1,85 @@
+/**
+ * camera-constraint.js —— 相机高度与俯仰约束（行走/飞行视角）
+ * ----------------------------------------------------------------------------
+ * 规则（产品硬性要求，非自由可调）：
+ *   1. 高度：相机固定在地面之上 1.5m（眼高）——每帧以空气墙碰撞体(1.collision.glb)向下探测
+ *      当前站立处的结构高度，相机 y = 结构面 + 1.5。结构有台阶/夹层时相机随之升高；
+ *      其他任何改变高度的手段（自由升降/滚轮/跳跃）一律被本模块按帧纠正，高度写死。
+ *   2. 俯仰：只能水平 360° 旋转，上下俯仰限制 ±20°（统一按帧钳制相机欧拉角 X）。
+ *
+ * 生效范围：fly / walk（带空气墙碰撞的行走视角）；?free=1 调试自由飞行或 orbit/anim
+ *          模式不干预（避免破坏点位纠偏与环绕视角）。
+ *
+ * 依赖：window.__ssplatCameraEntity（相机实体）、window.__ssplatCollision（空气墙碰撞体）、
+ *       window.__ssplatMode（相机模式）、window.__ssplatFreeFly。
+ */
+(async () => {
+    const EYE_HEIGHT = 1.5; // 眼高（米），强制
+    const PITCH_MAX = 20;   // 俯仰限制（度）
+    const DROP_RAY = 8;     // 向下探测最大距离（米）
+
+    // 等引擎暴露（Entity/App/Collision）就绪
+    let cam = null, app = null;
+    const waitReady = async () => {
+        for (let i = 0; i < 300; i++) {
+            if (window.__ssplatCameraEntity && window.__ssplatApp) {
+                cam = window.__ssplatCameraEntity;
+                app = window.__ssplatApp;
+                return true;
+            }
+            await new Promise((r) => setTimeout(r, 100));
+        }
+        return false;
+    };
+    if (!(await waitReady())) return;
+
+    const onTick = () => {
+        // 模式过滤：仅 fly / walk；?free=1 自由飞行豁免
+        if (window.__ssplatFreeFly) return;
+        const mode = window.__ssplatMode;
+        if (mode !== 'fly' && mode !== 'walk') return;
+
+        const col = window.__ssplatCollision;
+        if (!cam || !col || typeof col.queryRay !== 'function') return;
+        try {
+            const p = cam.getPosition();
+
+            // 1) 高度写死：向下探测空气墙结构面，相机 y = 结构面 + 1.5（随结构升高）
+            //    平滑收敛（避免上楼梯/过坎时相机瞬跳，进而诱发镜头抖动）。
+            const down = col.queryRay(p.x, p.y, p.z, 0, -1, 0, DROP_RAY);
+            if (down) {
+                const targetY = down.y + EYE_HEIGHT;
+                if (Math.abs(p.y - targetY) > 0.005) {
+                    cam.setPosition(p.x, p.y + (targetY - p.y) * 0.35, p.z);
+                }
+            }
+
+            // 2) 俯仰写死：水平 360°，上下 ±20°
+            //    只沿“相机自身 X 轴（横滚轴）”做增量修正：由 fwd 求 pitch，
+            //    超出 ±20° 时把超限角度折算成绕本地 X 轴的微小旋转右乘回去——
+            //    仅改变俯仰，yaw/roll 原样保留，镜头方向不会被强制拧转。
+            const q = cam.getRotation();
+            const fy = 2 * (q.x * q.w - q.y * q.z);
+            const pitchDeg = (Math.asin(Math.max(-1, Math.min(1, fy))) * 180) / Math.PI;
+            if (pitchDeg > PITCH_MAX || pitchDeg < -PITCH_MAX) {
+                const excess = (pitchDeg > PITCH_MAX ? pitchDeg - PITCH_MAX : pitchDeg + PITCH_MAX) * Math.PI / 180;
+                const s = Math.sin(-excess / 2), c = Math.cos(-excess / 2);
+                // q' = q * qx(-excess)
+                const wx = q.w * c - q.x * s;
+                const xx = q.w * s + q.x * c;
+                const yx = q.y * c + q.z * s;
+                const zx = q.z * c - q.y * s;
+                cam.setRotation(xx, yx, zx, wx);
+            }
+        } catch (err) { /* 单帧约束失败忽略 */ }
+    };
+
+    // 挂在引擎 update 之后（相机动完再纠正，避免与移动器打架）
+    if (app && typeof app.on === 'function') {
+        app.on('update', onTick);
+    } else {
+        const raf = () => { requestAnimationFrame(() => { onTick(); raf(); }); };
+        raf();
+    }
+    window.__ssplatCamConstraint = true;
+})();

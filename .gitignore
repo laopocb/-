@@ -1,0 +1,19 @@
+# ---------- 依赖 ----------
+node_modules/
+
+# ---------- 部署产物 / 压缩包 ----------
+deploy/
+deploy*.zip
+*.zip
+
+# ---------- 大体积点云（>100MB，GitHub 单文件限额 100MB） ----------
+data/*.ply
+deploy/data/
+
+# ---------- 系统无关目录 ----------
+NVIDIA Corporation/
+
+# ---------- 临时 / 调试 ----------
+*.log
+_ref_zip/
+trae-marker/
