@@ -52,7 +52,7 @@ const VIEWER_FILES = ['index.html', 'index.js', 'index.css'];
 
 // 功能模块清单：一个功能 = 一个 JS 文件
 const MODULES = ['camlog', 'wall-layer', 'annotations-poster', 'camera-constraint', 'pano-layer'];
-const MODULE_VERSION = '90'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
+const MODULE_VERSION = '91'; // 模块缓存破坏符（改模块内容后 +1，避免浏览器缓存旧文件）
 
 // ---------- index.html 补丁 ----------
 const HTML_PATCHES = [
@@ -524,9 +524,9 @@ const JS_PATCHES = [
             '                im.onerror = () => { console.warn(\'[marker] 图片加载失败：\', url); res(null); };',
             '                im.src = url;',
             '            });',
-            '            // [本补丁-箭头标注] 115~125 号标注图标用箭头贴图（data/箭头/jt.png），其余仍用莲花徽章',
+            '            // [本补丁-箭头标注] 115~125 号标注图标用箭头贴图（img/jt.png），其余仍用莲花徽章',
             '            const _isArrow = [\'115\', \'116\', \'117\', \'118\', \'119\', \'120\', \'121\', \'122\', \'123\', \'124\', \'125\'].indexOf(String(this.label)) >= 0;',
-            '            const baseUrl = _isArrow ? \'./data/箭头/jt.png\' : \'./img/热点标记-激活.png\';',
+            '            const baseUrl = _isArrow ? \'./img/jt.png\' : \'./img/热点标记-激活.png\';',
             '            this._loadIconTex = () => {',
             '                return Promise.all([mkTex(baseUrl), mkTex(baseUrl)]).then((ts) => {',
             '                    if (!this.materials || !this.materials.length || !ts[0]) return;',
@@ -820,6 +820,46 @@ const JS_PATCHES = [
             '            script.annotation.title = ann.title;',
             '            // [本补丁-可选性] 读取 settings.json 的 selectable 字段（115~125=false，其余 true）',
             '            script.annotation.selectable = ann.selectable !== false;'
+        ].join('\n')
+    },
+    {
+        name: 'index.js-可选性防御：click 回调内 selectable=false 直接 return（修复 create 时机晚于事件绑定的 bug）',
+        target: [
+            '        this.hotspotDom.addEventListener(\'click\', (e) => {',
+            '            e.stopPropagation();',
+            '            this.showTooltip();'
+        ].join('\n'),
+        replacement: [
+            '        this.hotspotDom.addEventListener(\'click\', (e) => {',
+            '            // [本补丁-可选性] selectable（settings 传入）在 script.create 之后才赋值，',
+            '            //          事件绑定先于赋值发生 → 必须在回调内二次防御，实现“可看不可点”。',
+            '            if (this.selectable === false) return;',
+            '            e.stopPropagation();',
+            '            this.showTooltip();'
+        ].join('\n')
+    },
+    {
+        name: 'index.js-可选性防御：pointerleave 回调内 selectable=false 直接 return（不触发 hover）',
+        target: [
+            '        const leave = () => {',
+            '            if (Annotation.hoverAnnotation === this) {'
+        ].join('\n'),
+        replacement: [
+            '        const leave = () => {',
+            '            if (this.selectable === false) return;',
+            '            if (Annotation.hoverAnnotation === this) {'
+        ].join('\n')
+    },
+    {
+        name: 'index.js-可选性防御：pointerenter 回调内 selectable=false 直接 return（不触发 hover）',
+        target: [
+            '        const enter = () => {',
+            '            if (Annotation.hoverAnnotation !== null) {'
+        ].join('\n'),
+        replacement: [
+            '        const enter = () => {',
+            '            if (this.selectable === false) return;',
+            '            if (Annotation.hoverAnnotation !== null) {'
         ].join('\n')
     }
 ];

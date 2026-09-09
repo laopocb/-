@@ -3,6 +3,7 @@ node_modules/
 
 # ---------- 部署产物 / 压缩包 ----------
 deploy/
+deploy_*/
 deploy*.zip
 *.zip
 

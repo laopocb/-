@@ -220,6 +220,13 @@
         hotspots.forEach((el, index) => {
             if (seen.has(el)) return;
             seen.add(el);
+            // [本补丁-可选性] 箭头标注（selectable=false 或 title 115_点~125_点）绑定空壳：
+            //          鼠标点击不弹海报浮窗（官方事件已被拦截，这里独立绑定需同步拦截）。
+            const ann = annotations[index];
+            if (ann && (ann.selectable === false || /^1(?:1[5-9]|2[0-5])_点$/.test(ann.title || ''))) {
+                el.addEventListener('click', (e) => { e.stopPropagation(); });
+                return;
+            }
             el.addEventListener('click', (e) => {
                 e.stopPropagation(); // 阻止冒泡触发官方的 document click（隐藏逻辑）
                 if (isPointOccluded(annotations[index]?.position)) return; // 被遮挡：不弹浮窗
@@ -231,6 +238,8 @@
     // ---------- 触发方式2（兜底）：监听官方 annotation.activate 事件（引擎拾取 3D 圆点触发） ----------
     const openByAnnotation = (ann) => {
         if (!ann) return;
+        // [本补丁-可选性] 箭头标注不弹浮窗（含引擎拾取触发的 activate 兜底路径）
+        if (ann.selectable === false || (ann.title && /^1(?:1[5-9]|2[0-5])_点$/.test(ann.title))) return;
         if (isPointOccluded(ann.position)) return; // 被遮挡：不弹浮窗（与 activate 源拦截一致）
         let idx = -1;
         if (ann && ann.position) {

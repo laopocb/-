@@ -82318,9 +82318,9 @@ class Annotation extends Script {
                 im.onerror = () => { console.warn('[marker] 图片加载失败：', url); res(null); };
                 im.src = url;
             });
-            // [本补丁-箭头标注] 115~125 号标注图标用箭头贴图（data/箭头/jt.png），其余仍用莲花徽章
+            // [本补丁-箭头标注] 115~125 号标注图标用箭头贴图（img/jt.png），其余仍用莲花徽章
             const _isArrow = ['115', '116', '117', '118', '119', '120', '121', '122', '123', '124', '125'].indexOf(String(this.label)) >= 0;
-            const baseUrl = _isArrow ? './data/箭头/jt.png' : './img/热点标记-激活.png';
+            const baseUrl = _isArrow ? './img/jt.png' : './img/热点标记-激活.png';
             this._loadIconTex = () => {
                 return Promise.all([mkTex(baseUrl), mkTex(baseUrl)]).then((ts) => {
                     if (!this.materials || !this.materials.length || !ts[0]) return;
@@ -82444,16 +82444,21 @@ class Annotation extends Script {
         if (this.selectable !== false) {
         // Add click handlers
         this.hotspotDom.addEventListener('click', (e) => {
+            // [本补丁-可选性] selectable（settings 传入）在 script.create 之后才赋值，
+            //          事件绑定先于赋值发生 → 必须在回调内二次防御，实现“可看不可点”。
+            if (this.selectable === false) return;
             e.stopPropagation();
             this.showTooltip();
         });
         const leave = () => {
+            if (this.selectable === false) return;
             if (Annotation.hoverAnnotation === this) {
                 Annotation.hoverAnnotation = null;
                 this.setHover(false);
             }
         };
         const enter = () => {
+            if (this.selectable === false) return;
             if (Annotation.hoverAnnotation !== null) {
                 Annotation.hoverAnnotation.setHover(false);
             }
