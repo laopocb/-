@@ -82276,14 +82276,17 @@ class Annotation extends Script {
         Annotation._initializeStatic(this.app);
         // Create texture
         this.texture = Annotation._createHotspotTexture(this.app, this.label);
-        // [本补丁] 所有标注统一使用 img/热点标记-激活.png（1.62x，无呼吸，用户指定试用此图）：
-        //          选中/取消切换保持同一张图（后续如需区分再改回 base/激活 双图）。
-        //          异步加载，失败回退官方圆点。像素大小按光效实际像素等比换算与官方标记一致。
-        this._markerKey = this.label;
+        // [本补丁-两方案] 标注图标两套方案（方法保留，URL 切换）
+        //   方案1 icon   ：?marker=icon → 莲花徽章纹理（img/热点标记-激活.png，1.62x，无呼吸）；
+        //   方案2 number ：默认 → 官方数字圆点（label=title 前缀数字，与 KML 序号对应）；
+        //   __ssplatMarker.setScheme('icon'|'number') 运行时全局切换。
+        const _markerSchemeRaw = new URLSearchParams(location.search).get('marker');
+        this._markerScheme = _markerSchemeRaw === 'icon' ? 'icon' : 'number';
+        this._markerKey = this._markerScheme === 'icon' ? this.label : '';
         this._markerActive = false;
         this._markerBoost = 1.62;
         this._markerTex = { base: null, active: null };
-        if (this._markerKey) {
+        { // [本补丁-两方案] 无条件下定义纹理加载器（两方案共用；加载时机见文件尾部）
             const dv = this.app.graphicsDevice;
             // [修复] alpha 透明通道：createImageBitmap+setSource 在 WebGPU 下 alpha 未正确上传 → 透明区显示黑。
         //       改用官方已验证的渲染路径：Image→canvas(2次幂)→getImageData(逐像素RGBA)→levels 上传；
@@ -82316,13 +82319,17 @@ class Annotation extends Script {
                 im.src = url;
             });
             const baseUrl = './img/热点标记-激活.png';
-            Promise.all([mkTex(baseUrl), mkTex('./img/热点标记-激活.png')]).then((ts) => {
-                if (!this.materials || !this.materials.length || !ts[0]) return;
-                this._markerTex.base = ts[0];
-                this._markerTex.active = ts[1] || ts[0];
-                this._applyMarkerTex(this._markerActive ? this._markerTex.active : this._markerTex.base);
-            });
+            this._loadIconTex = () => {
+                return Promise.all([mkTex(baseUrl), mkTex(baseUrl)]).then((ts) => {
+                    if (!this.materials || !this.materials.length || !ts[0]) return;
+                    this._markerTex.base = ts[0];
+                    this._markerTex.active = ts[1] || ts[0];
+                    if (this._markerScheme === 'icon') this._applyMarkerTex(this._markerActive ? this._markerTex.active : this._markerTex.base);
+                });
+            };
         }
+        // [本补丁-两方案] 仅方案1(icon)初始加载莲花纹理；方案2(number)直接用官方数字圆点。
+        if (this._markerKey) this._loadIconTex();
         this._applyMarkerTex = (tex) => {
             if (!tex || !this.materials) return;
             this.materials.forEach((m) => {
@@ -82346,6 +82353,29 @@ class Annotation extends Script {
             this._markerBoost = 1.62;
             const t = this._markerTex[this._markerActive ? 'active' : 'base'];
             if (t) this._applyMarkerTex(t);
+        };
+        // [本补丁-两方案] 运行时切换：'number' 恢复官方数字圆点；'icon' 应用莲花纹理（未就绪则加载）。
+        this._setScheme = (scheme) => {
+            const next = scheme === 'icon' ? 'icon' : 'number';
+            if (next === this._markerScheme) return;
+            this._markerScheme = next;
+            this._markerKey = next === 'icon' ? this.label : '';
+            if (next === 'number') {
+                this._markerActive = false;
+                if (!this.materials) return;
+                this.materials.forEach((m, mi) => {
+                    m.emissiveMap = this.texture;
+                    m.opacityMap = this.texture;
+                    m.alphaTest = 0.01;
+                    m.opacity = mi === 0 ? 1 : 0.25;
+                    m.blendType = 0;
+                    m.update();
+                });
+                if (this.app) this.app.renderNextFrame = true;
+            } else {
+                if (this._markerTex.base) this._applyMarkerTex(this._markerActive ? this._markerTex.active : this._markerTex.base);
+                else if (this._loadIconTex) this._loadIconTex();
+            }
         };
         // Create material the base and overlay material
         this.materials = [
@@ -82671,7 +82701,17 @@ class Annotations {
             if (changed) global.app.renderNextFrame = true;
         };
         global.events.on('annotation.deactivate', clearMarkers);
-        window.__ssplatMarker = { deactivate: clearMarkers };
+        window.__ssplatMarker = {
+            deactivate: clearMarkers,
+            // [本补丁-两方案] 运行时切换标注图标方案：'number'=官方数字圆点，'icon'=莲花徽章。
+            setScheme: (scheme) => {
+                const s = scheme === 'icon' ? 'icon' : 'number';
+                for (const sc of scriptMap.values()) {
+                    if (sc && sc.annotation && typeof sc.annotation._setScheme === 'function') sc.annotation._setScheme(s);
+                }
+                global.app.renderNextFrame = true;
+            }
+        };
         // handle navigator requesting an annotation to be shown
         global.events.on('annotation.navigate', (ann) => {
             const script = scriptMap.get(ann);
