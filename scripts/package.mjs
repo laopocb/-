@@ -62,7 +62,7 @@ const main = async () => {
 
     // 3) img（封面/莲花/光环/标注图：仅打包运行时实际引用的，排除无用素材）
     const imgExt = ['.jpg', '.jpeg', '.png', '.webp'];
-    const imgSkip = new Set(['热点标记.png', '热点标记1.png', 'd8a4.png', 'b1.png', 'b2.png', 'b3.png', 'IMG_980.jpg']);
+    const imgSkip = new Set(['热点标记.png', '热点标记1.png', 'd8a4.png', 'b1.png', 'b3.png', 'IMG_980.jpg']); // b2.png 保留：用户当前使用的标注图
     const imgs = (await readdir(IMG)).filter((f) => !f.startsWith('_') && !imgSkip.has(f) && imgExt.includes(f.slice(f.lastIndexOf('.')).toLowerCase()));
     total += await copyTree(IMG, imgs, 'img');
     console.log(`  [img] 已复制 ${imgs.length} 个（排除无用素材）`);

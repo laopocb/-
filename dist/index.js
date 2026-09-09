@@ -82276,12 +82276,12 @@ class Annotation extends Script {
         Annotation._initializeStatic(this.app);
         // Create texture
         this.texture = Annotation._createHotspotTexture(this.app, this.label);
-        // [本补丁-两方案] 标注图标两套方案（方法保留，URL 切换）
-        //   方案1 icon   ：?marker=icon → 莲花徽章纹理（img/热点标记-激活.png，1.62x，无呼吸）；
-        //   方案2 number ：默认 → 官方数字圆点（label=title 前缀数字，与 KML 序号对应）；
+        // [本补丁-两方案] 标注图标两套方案（方法保留，URL/运行时切换）
+        //   方案1 icon   ：默认 → 莲花徽章纹理（img/热点标记-激活.png，1.62x，无呼吸）；
+        //   方案2 number ：?marker=number → 官方数字圆点（label=title 前缀数字，与 KML 序号对应）；
         //   __ssplatMarker.setScheme('icon'|'number') 运行时全局切换。
         const _markerSchemeRaw = new URLSearchParams(location.search).get('marker');
-        this._markerScheme = _markerSchemeRaw === 'icon' ? 'icon' : 'number';
+        this._markerScheme = _markerSchemeRaw === 'number' ? 'number' : 'icon';
         this._markerKey = this._markerScheme === 'icon' ? this.label : '';
         this._markerActive = false;
         this._markerBoost = 1.62;
@@ -82318,7 +82318,9 @@ class Annotation extends Script {
                 im.onerror = () => { console.warn('[marker] 图片加载失败：', url); res(null); };
                 im.src = url;
             });
-            const baseUrl = './img/热点标记-激活.png';
+            // [本补丁-箭头标注] 115~125 号标注图标用箭头贴图（data/箭头/jt.png），其余仍用莲花徽章
+            const _isArrow = ['115', '116', '117', '118', '119', '120', '121', '122', '123', '124', '125'].indexOf(String(this.label)) >= 0;
+            const baseUrl = _isArrow ? './data/箭头/jt.png' : './img/热点标记-激活.png';
             this._loadIconTex = () => {
                 return Promise.all([mkTex(baseUrl), mkTex(baseUrl)]).then((ts) => {
                     if (!this.materials || !this.materials.length || !ts[0]) return;
@@ -82328,8 +82330,8 @@ class Annotation extends Script {
                 });
             };
         }
-        // [本补丁-两方案] 仅方案1(icon)初始加载莲花纹理；方案2(number)直接用官方数字圆点。
-        if (this._markerKey) this._loadIconTex();
+        // [本补丁-两方案] 纹理加载被移到 materials 创建之后统一触发（见 createMaterial 后补丁），
+        //          避免在 materials 尚未初始化时提前调用导致箭头贴图丢失（退化成数字圆点）。
         this._applyMarkerTex = (tex) => {
             if (!tex || !this.materials) return;
             this.materials.forEach((m) => {
@@ -82355,7 +82357,10 @@ class Annotation extends Script {
             if (t) this._applyMarkerTex(t);
         };
         // [本补丁-两方案] 运行时切换：'number' 恢复官方数字圆点；'icon' 应用莲花纹理（未就绪则加载）。
+        // [本补丁-箭头标注] 115~125 箭头标注强制保持 icon（箭头贴图），号码/莲花方案切换对其无效。
+        this._isArrow = (['115', '116', '117', '118', '119', '120', '121', '122', '123', '124', '125'].indexOf(String(this.label)) >= 0);
         this._setScheme = (scheme) => {
+            if (this._isArrow) { this._markerScheme = 'icon'; this._markerKey = String(this.label); return; }
             const next = scheme === 'icon' ? 'icon' : 'number';
             if (next === this._markerScheme) return;
             this._markerScheme = next;
@@ -82409,9 +82414,34 @@ class Annotation extends Script {
         });
         this.entity.addChild(base);
         this.entity.addChild(overlay);
+        // [本补丁-两方案] materials 就绪后触发纹理加载；失败自动重试（每 120ms 至多 8 次），
+        //          根治箭头贴图不生效、退化成编号圆点的问题（before: 提前调用+无重试）。
+        if (this._markerKey) {
+            this._loadIconTex();
+            this._markerRetry = 0;
+            this._markerRetryTimer = setInterval(() => {
+                if (this._markerTex.base || this._markerRetry >= 8) {
+                    clearInterval(this._markerRetryTimer);
+                    return;
+                }
+                this._markerRetry += 1;
+                this._loadIconTex();
+            }, 120);
+        }
         // Create hotspot dom
         this.hotspotDom = document.createElement('div');
         this.hotspotDom.className = 'pc-annotation-hotspot';
+        // [本补丁-箭头标注] 115~125 号箭头：热区扩大为 64px（官方 30px）+ 层级抬高，
+        //          确保箭头平躺地面后依然极易点中，选中逻辑与其他标注完全一致
+        //          （DOM 热区点击 → showTooltip → annotation.activate）。
+        if (['115', '116', '117', '118', '119', '120', '121', '122', '123', '124', '125'].indexOf(String(this.label)) >= 0) {
+            this.hotspotDom.style.width = '64px';
+            this.hotspotDom.style.height = '64px';
+            this.hotspotDom.style.zIndex = '10';
+        }
+        // [本补丁-可选性] selectable=false 的标注（settings.json 中 115~125 箭头）
+        //          不绑定任何事件：鼠标放上去无任何反应，也不可被点中。
+        if (this.selectable !== false) {
         // Add click handlers
         this.hotspotDom.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -82437,6 +82467,7 @@ class Annotation extends Script {
                 this.hideTooltip();
             }
         });
+        }
         Annotation.parentDom.appendChild(this.hotspotDom);
         // Clean up on entity destruction
         this.on('destroy', () => {
@@ -82589,6 +82620,8 @@ class Annotation extends Script {
         // [本补丁] 标注恒定大小：等比放大至与官方圆点一致的像素尺寸（无呼吸动画）。
         let scale = this._calculateScreenSpaceScale(viewDepth);
         if (this._markerKey) scale = scale * this._markerBoost;
+        // [本补丁-箭头标注] 115~125 号箭头图标放大 1 倍（1.62 → 翻倍）。
+        if (['115', '116', '117', '118', '119', '120', '121', '122', '123', '124', '125'].indexOf(String(this.label)) >= 0) scale = scale * 2;
         this.entity.setLocalScale(scale, scale, scale);
     }
     /**
@@ -82598,6 +82631,32 @@ class Annotation extends Script {
      * @private
      */
     _updateHotspotTransform(hotspot, cameraRotation) {
+            // [本补丁-115箭头] 115 号标注箭头：
+            //   1) 标注网格是 PlaneGeometry，局部法线为 +Y（平面本身就平行于地面）；
+            //      所以“与地面齐平”= 绕世界 Y 轴只做偏航旋转（俯仰/横滚=0），
+            //      绝不绕 X 旋转——绕 X 会把法线转到 ±Z，箭头又变回垂直立板（用户报的 bug）。
+            //   2) 偏航角把纹理“上方向”（箭头头部）对准 pos→target 在地面的投影方向，
+            //      再按用户要求水平旋转 180°（箭头指向相反方向，115 已验证）。
+            //      115 号：pos=(-6.92,-1.11,18.82)，target=(-15.45,-3.12,22.77)，
+            //      投影方向 (-8.53,0,3.95) → 原始偏航 atan2(dx,dz) ≈ -65.16°，+180° ≈ 114.84°。
+            const __arrowLbl = String(this.label);
+            if (__arrowLbl === '115') {
+                hotspot.setEulerAngles(0, 114.84, 0);
+                return;
+            }
+            // [本补丁-箭头标注] 115~125 全部水平平躺（俯仰/横滚=0），仅绕世界 Y 轴偏航；
+            //   方向 yaw = atan2(target.x-pos.x, target.z-pos.z) + 180°（指向 target，含 180° 修正）。
+            //   高度统一在 settings.json 中（117~125 = 6.8m）。
+            if (__arrowLbl === '116') { hotspot.setEulerAngles(0, -50.88, 0); return; }
+            if (__arrowLbl === '117') { hotspot.setEulerAngles(0, -112.06, 0); return; }
+            if (__arrowLbl === '118') { hotspot.setEulerAngles(0, -108.30, 0); return; }
+            if (__arrowLbl === '119') { hotspot.setEulerAngles(0, 71.70, 0); return; }
+            if (__arrowLbl === '120') { hotspot.setEulerAngles(0, -110.42, 0); return; }
+            if (__arrowLbl === '121') { hotspot.setEulerAngles(0, 142.97, 0); return; }
+            if (__arrowLbl === '122') { hotspot.setEulerAngles(0, 119.57, 0); return; }
+            if (__arrowLbl === '123') { hotspot.setEulerAngles(0, 174.82, 0); return; }
+            if (__arrowLbl === '124') { hotspot.setEulerAngles(0, -101.20, 0); return; }
+            if (__arrowLbl === '125') { hotspot.setEulerAngles(0, 164.89, 0); return; }
         hotspot.setRotation(cameraRotation);
         hotspot.rotateLocal(90, 0, 0);
     }
@@ -82669,6 +82728,8 @@ class Annotations {
             const __num = /^\d+/.exec(ann.title || '');
             script.annotation.label = __num ? __num[0] : (i + 1).toString();
             script.annotation.title = ann.title;
+            // [本补丁-可选性] 读取 settings.json 的 selectable 字段（115~125=false，其余 true）
+            script.annotation.selectable = ann.selectable !== false;
             script.annotation.text = ann.text;
             entity.setPosition(ann.position[0], ann.position[1], ann.position[2]);
             parent.addChild(entity);
@@ -88680,7 +88741,7 @@ class Viewer {
             window.__ssplatApp = typeof app !== "undefined" ? app : null;
             window.__ssplatCameraEntity = global.camera || null;
             // [本补丁] 暴露引擎场景类构造器，供功能模块（pano-layer 全景球）创建网格/材质/实体
-            window.__ssplatPano = { Mesh, MeshInstance, StandardMaterial, SphereGeometry, Entity, Color, Texture, CULLFACE_NONE, FILTER_LINEAR, FILTER_LINEAR_MIPMAP_LINEAR, PIXELFORMAT_RGBA8 };
+            window.__ssplatPano = { Mesh, MeshInstance, StandardMaterial, SphereGeometry, Entity, Color, Texture, Quat, Mat4, CULLFACE_NONE, FILTER_LINEAR, FILTER_LINEAR_MIPMAP_LINEAR, PIXELFORMAT_RGBA8 };
             const { gsplat } = app.scene;
             // quality budget
             const budgets = {
@@ -89871,15 +89932,14 @@ const loadSkybox = (app, url) => {
     });
 };
 const createApp = async (canvas, config) => {
-    // [本补丁] 渲染后端：移动端（UA 含 Mobile/Android/iPhone/iPad）或 ?webgl=1 强制 WebGL2，
-    //          部分安卓 Chrome 的 WebGPU 在 Adreno 等 GPU 上初始化失败 → 加载页完成后白屏；
-    //          桌面保持引擎自动（WebGPU 优先）。
-    const useWebGPU = (window.__ssplatMobile || window.__ssplatForceWebgl) ? false : config.renderer === 'webgpu';
+    // [本补丁] 渲染后端：默认优先 WebGL2（WebGPU 在本项目有白屏/箭头渲染差异问题）；
+    //          仅 ?webgpu=1（非移动端）显式切回 WebGPU；?webgl=1 仍强制 WebGL2。
+    const useWebGPU = (window.__ssplatForceWebgpu && !window.__ssplatMobile) ? config.renderer === 'webgpu' : false;
     // Create the graphics device. The engine auto-appends WebGL2/null fallbacks
     // when WebGPU isn't supported. Request xrCompatible so the device — WebGPU
     // (via XRGPUBinding) or the WebGL fallback — is usable for AR/VR.
     const device = await createGraphicsDevice(canvas, {
-        deviceTypes: useWebGPU ? ['webgpu'] : ((window.__ssplatMobile || window.__ssplatForceWebgl) ? ['webgl2'] : []),
+        deviceTypes: useWebGPU ? ['webgpu'] : ['webgl2'],
         antialias: false,
         depth: true,
         stencil: false,
